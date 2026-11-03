@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Bản đồ khảo sát sạt lở | Lạng Sơn</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./leaflet.css">
+  <style>
+    :root {
+      --ink: #172a35;
+      --muted: #64737a;
+      --line: #d7dfdc;
+      --paper: #f3f5f1;
+      --panel: #fff;
+      --forest: #174d43;
+      --forest-2: #286d5d;
+      --lime: #d2e7a2;
+      --amber: #a85a20;
+      --amber-bg: #fff3e5;
+      --blue: #176f96;
+      --shadow: 0 10px 28px rgb(22 46 39 / 7%);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); }
+    button, select, input, textarea { font: inherit; }
+    a { color: #155e75; }
+    .masthead {
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      padding: 18px max(22px, calc((100vw - 1660px) / 2));
+      color: #f6f7f3; background: var(--forest);
+    }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      display: grid; width: 42px; height: 42px; place-items: center;
+      border: 1px solid rgb(255 255 255 / 38%); border-radius: 50%;
+      color: var(--lime); font: 600 17px Georgia, serif;
+    }
+    h1 { margin: 0; font-size: clamp(18px, 2vw, 23px); letter-spacing: -.025em; }
+    .masthead p { margin: 3px 0 0; color: #d8e6dc; font-size: 12px; }
+    .head-status { text-align: right; font-size: 12px; color: #e2eee6; }
+    .head-status strong { color: #d4efad; }
+    main { max-width: 1660px; margin: auto; padding: 18px 22px 36px; }
+    .intro {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+      margin: 2px 0 14px;
+    }
+    .intro h2 { margin: 0; font-size: 17px; }
+    .intro p { max-width: 880px; margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .stamp {
+      flex: 0 0 auto; border: 1px solid #d5dfd9; border-radius: 5px;
+      padding: 6px 9px; color: var(--muted); background: #fff; font-size: 11px;
+    }
+    .grid { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: 14px; align-items: start; }
+    .stack { display: grid; gap: 14px; min-width: 0; }
+    .panel {
+      min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 9px;
+      background: var(--panel); box-shadow: var(--shadow);
+    }
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 13px 15px; border-bottom: 1px solid #e8eeea;
+    }
+    .panel-head h2 { margin: 0; font-size: 14px; }
+    .eyebrow { color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .map-toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+      padding: 10px 12px; border-bottom: 1px solid #edf0ed;
+    }
+    .tool-label { margin-right: 2px; color: var(--muted); font-size: 11px; }
+    .choice, .quiet-btn {
+      min-height: 31px; border: 1px solid #d4ddda; border-radius: 5px;
+      padding: 5px 9px; color: #31434a; background: white; cursor: pointer; font-size: 11px;
+    }
+    .choice[aria-pressed="true"] { border-color: var(--forest); color: white; background: var(--forest); }
+    .quiet-btn:hover, .choice:hover { border-color: var(--forest-2); }
+    .overlay-control {
+      display: flex; flex: 1 1 315px; align-items: center; gap: 9px; min-width: 245px;
+      margin-left: auto; color: #34474e; font-size: 11px;
+    }
+    .overlay-control label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .overlay-control input[type="range"] { width: 95px; accent-color: var(--forest-2); }
+    .location-toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 9px;
+      padding: 10px 12px; border-bottom: 1px solid #edf0ed;
+    }
+    .location-copy { display: grid; flex: 1 1 260px; gap: 3px; font-size: 11px; }
+    .location-copy strong { color: #23453b; }
+    .location-copy span, .location-readout { color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .location-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .location-readout { flex-basis: 100%; }
+    .quiet-btn:disabled { cursor: not-allowed; opacity: .55; }
+    .map-wrap { position: relative; }
+    #map { width: 100%; height: min(61vh, 650px); min-height: 420px; background: #e5ece5; }
+    .map-foot {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px;
+      padding: 8px 12px; color: var(--muted); font-size: 10px;
+    }
+    .map-foot a { text-decoration: none; }
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 6px; border-radius: 99px;
+      padding: 4px 8px; color: #155c49; background: #e9f4e7; font-size: 10px; font-weight: 700;
+    }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #39956b; }
+    .status-line { color: var(--muted); }
+    .status-line.error { color: #a33427; }
+    .live-toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      padding: 10px 12px; border-bottom: 1px solid #edf0ed;
+      color: var(--muted); font-size: 11px;
+    }
+    .rain-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+      gap: 9px; padding: 12px;
+    }
+    .rain-card {
+      min-width: 0; border: 1px solid #dfe6e2; border-radius: 6px;
+      padding: 10px; background: #fbfcfa;
+    }
+    .rain-card.active { border-color: var(--forest-2); box-shadow: inset 0 0 0 1px var(--forest-2); }
+    .rain-card button {
+      width: 100%; border: 0; padding: 0; text-align: left; color: inherit;
+      background: transparent; cursor: pointer;
+    }
+    .rain-card button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+    .rain-card h3 { margin: 0 0 7px; font-size: 12px; }
+    .rain-card .rain-id { color: var(--muted); font: 10px ui-monospace, Consolas, monospace; }
+    .rain-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 9px; }
+    .rain-metric { border-left: 2px solid #bfd4c8; padding: 4px 7px; background: #f3f7f3; }
+    .rain-metric b { display: block; font-size: 14px; }
+    .rain-metric span { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; }
+    .rain-meta { margin: 8px 0 0; color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .rain-error { color: #a33427; font-size: 10px; overflow-wrap: anywhere; }
+    .rain-hourly { padding: 0 12px 12px; }
+    .rain-hourly h3 { margin: 0 0 4px; font-size: 11px; }
+    .rain-hourly p { margin: 0 0 7px; color: var(--muted); font-size: 9px; }
+    .rain-bars {
+      display: flex; align-items: flex-end; gap: 4px; overflow-x: auto;
+      min-height: 100px; border-bottom: 1px solid #dfe6e2; padding: 6px 2px 0;
+    }
+    .rain-hour { flex: 0 0 30px; text-align: center; color: var(--muted); font-size: 8px; }
+    .rain-bar {
+      width: 14px; min-height: 2px; margin: 0 auto 4px; border-radius: 3px 3px 0 0;
+      background: #4a9ec0;
+    }
+    .rain-hour-value { display: block; min-height: 10px; margin-bottom: 2px; color: #34474e; font-size: 8px; }
+    .alerts-block { padding: 12px 14px 14px; border-top: 1px solid #e8eeea; }
+    .alerts-block h3 { margin: 0; font-size: 13px; }
+    .alerts-block > p { margin: 5px 0 9px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .alert-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .alert-item { border: 1px solid #e5e9e5; border-radius: 5px; padding: 8px 9px; background: #fbfcfa; }
+    .alert-item.local { border-left: 3px solid #b94f35; }
+    .alert-item a { font-size: 10px; font-weight: 700; line-height: 1.45; }
+    .alert-item p { margin: 4px 0 0; color: var(--muted); font-size: 9px; }
+    .alert-empty { border-left: 3px solid #d18a3d; padding: 8px 9px; color: #68491f; background: var(--amber-bg); font-size: 10px; line-height: 1.5; }
+    .live-disclaimer { margin: 0 12px 12px; border-left: 3px solid #bf8c50; padding: 8px 10px; color: #675238; background: #fbf6ed; font-size: 10px; line-height: 1.5; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 10px 16px; padding: 0 12px 10px;
+      color: #4c5d64; font-size: 10px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px #60736c; }
+    .legend .located { background: #cf5a3c; }
+    .legend .pending { background: #7a8790; }
+    .legend .gps-current { background: #1676c5; }
+    .legend .gps-captured { background: #6b4bb8; }
+    .side { display: grid; gap: 14px; }
+    .site-picker { width: 100%; border: 1px solid #cfdad5; border-radius: 5px; padding: 8px; background: #fff; color: var(--ink); }
+    .site-detail { padding: 14px 15px 15px; }
+    .site-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .site-title h3 { margin: 0; font-size: 17px; }
+    .site-id { color: #63736f; font: 11px ui-monospace, Consolas, monospace; }
+    .tag {
+      display: inline-block; border-radius: 4px; padding: 4px 7px;
+      color: #75420f; background: #fff0d9; font-size: 10px; font-weight: 700;
+    }
+    .site-detail p { margin: 9px 0; color: #4c5c61; font-size: 12px; }
+    .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 12px 0; }
+    .fact { border-left: 2px solid #bfd4c8; padding: 4px 8px; background: #f7f9f6; }
+    .fact b { display: block; font-size: 14px; }
+    .fact span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .caution {
+      border-left: 3px solid #d18a3d; border-radius: 3px; padding: 8px 9px;
+      color: #68491f; background: var(--amber-bg); font-size: 11px;
+    }
+    .sources { padding: 11px 15px 14px; border-top: 1px solid #edf0ed; font-size: 11px; }
+    .sources summary { color: #355a4d; cursor: pointer; font-weight: 700; }
+    .sources p { margin: 8px 0 0; color: var(--muted); }
+    .unlocated { padding: 12px 14px 14px; }
+    .unlocated h3 { margin: 0 0 8px; font-size: 13px; }
+    .unlocated ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .unlocated li { border-top: 1px solid #edf0ed; padding-top: 7px; color: #4c5c61; font-size: 11px; }
+    .unlocated strong { color: var(--ink); }
+    .scene-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px; }
+    .scene {
+      min-width: 0; overflow: hidden; border: 1px solid #dfe6e2; border-radius: 6px; background: #f6f8f6;
+    }
+    .scene img { display: block; width: 100%; height: 230px; object-fit: contain; background: #17221f; }
+    .scene-info { padding: 8px 9px; }
+    .scene-info b { display: block; font-size: 11px; }
+    .scene-info span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .scene-info a { display: inline-block; margin-top: 6px; font-size: 10px; }
+    .scene-note { margin: 0 12px 12px; border-left: 3px solid #bf8c50; padding: 8px 10px; color: #675238; background: #fbf6ed; font-size: 10px; }
+    .interpret { padding: 12px 14px 14px; }
+    .interpret label { display: block; margin: 9px 0 4px; color: #4b5c61; font-size: 11px; font-weight: 650; }
+    .interpret select, .interpret textarea {
+      width: 100%; border: 1px solid #d3ddda; border-radius: 5px; padding: 8px;
+      color: var(--ink); background: white; font-size: 11px;
+    }
+    .interpret textarea { min-height: 86px; resize: vertical; }
+    .actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .saved-note { min-height: 15px; margin-top: 7px; color: #557064; font-size: 10px; }
+    .howto { padding: 12px 15px 14px; }
+    .howto ol { margin: 0; padding-left: 18px; color: #4f6064; font-size: 11px; }
+    .howto li + li { margin-top: 6px; }
+    .sources-footer { margin-top: 14px; border-top: 1px solid #d7dfdc; padding: 12px 2px; color: #5d6c70; font-size: 10px; }
+    .sources-footer a { margin-right: 10px; }
+    .leaflet-popup-content-wrapper { border-radius: 7px; }
+    .popup-title { margin-bottom: 4px; font-weight: 700; }
+    .popup-copy { color: #58676b; font-size: 11px; line-height: 1.45; }
+    .site-pin {
+      display: grid; width: 29px; height: 29px; place-items: center; border: 2px solid white;
+      border-radius: 50%; color: white; background: #b94f35; box-shadow: 0 2px 8px #16282066;
+      font: 700 10px ui-monospace, Consolas, monospace;
+    }
+    .site-pin.active { width: 35px; height: 35px; border-color: #e7f2ce; background: #174d43; font-size: 11px; }
+    .site-pin.unlocated-pin { background: #78858b; }
+    @media (max-width: 1050px) {
+      .grid { grid-template-columns: minmax(0, 1fr) 330px; }
+      .scene img { height: 190px; }
+    }
+    @media (max-width: 780px) {
+      .masthead { align-items: flex-start; padding: 14px 16px; }
+      .head-status { max-width: 135px; font-size: 10px; }
+      main { padding: 14px 12px 24px; }
+      .intro { flex-direction: column; gap: 8px; }
+      .grid { grid-template-columns: 1fr; }
+      #map { height: 53vh; min-height: 370px; }
+      .side { grid-template-columns: 1fr; }
+      .scene img { height: 220px; }
+      .overlay-control { margin-left: 0; }
+    }
+    @media (max-width: 480px) {
+      .brand-mark { width: 36px; height: 36px; }
+      .masthead p { max-width: 205px; font-size: 10px; }
+      .scene-grid { grid-template-columns: 1fr; }
+      .scene img { height: 245px; }
+      .overlay-control { flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">LS</div>
+      <div>
+        <h1>Khảo sát sạt lở · Lạng Sơn</h1>
+        <p>Bản đồ hiện trường và bộ ảnh quan sát — có nguồn, có giới hạn</p>
+      </div>
+    </div>
+    <div class="head-status">
+      <div><strong>5 điểm</strong> có tọa độ gần đúng</div>
+      <div><strong>3 địa bàn</strong> chưa định vị</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="intro">
+      <div>
+        <h2>Vị trí khảo sát và chồng lớp ảnh tham khảo</h2>
+        <p>Chọn điểm để xem tọa độ nguồn, trạng thái dữ liệu và ảnh Sentinel đang có. Các dấu vị trí được lấy từ PDF khảo sát; chúng là vị trí gần đúng, không phải ranh giới khối trượt đã đo.</p>
+      </div>
+      <div class="stamp">Hồ sơ dự án · snapshot 03/11/2026</div>
+    </div>
+
+    <div class="grid">
+      <div class="stack">
+        <section class="panel" aria-labelledby="map-title">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">01 / Không gian</div>
+              <h2 id="map-title">Bản đồ địa hình & ảnh gần thời gian thực</h2>
+            </div>
+            <span class="live-badge"><i class="live-dot"></i><span id="live-date">Đang kiểm tra NASA GIBS…</span></span>
+          </div>
+          <div class="map-toolbar">
+            <span class="tool-label">Nền:</span>
+            <button type="button" class="choice" id="topo-btn" aria-pressed="true">Địa hình</button>
+            <button type="button" class="choice" id="sat-btn" aria-pressed="false">Ảnh nền Esri</button>
+            <span class="overlay-control">
+              <label><input id="gpm-toggle" type="checkbox" checked> Mưa vệ tinh GPM · 30 phút</label>
+              <label><input id="nasa-toggle" type="checkbox"> Ảnh NASA VIIRS</label>
+              <input id="opacity" aria-label="Độ mờ lớp mưa vệ tinh GPM" type="range" min="0.15" max="1" value="0.72" step="0.05">
+              <span id="opacity-label">72%</span>
+            </span>
+          </div>
+          <div class="map-wrap"><div id="map" aria-label="Bản đồ tương tác các điểm khảo sát"></div></div>
+          <div class="map-foot">
+            <span id="tile-status" class="status-line">Đang tải bản đồ nền…</span>
+            <span id="gpm-status" class="status-line">Đang đọc thời điểm ảnh GPM…</span>
+            <span>IMERG là ước tính mưa vệ tinh ~10 km; không phải số đo trạm. Ảnh Esri là mosaic, không phải ảnh trực tiếp.</span>
+            <a href="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml" target="_blank" rel="noreferrer">Metadata NASA WMTS ↗</a>
+          </div>
+          <div class="location-toolbar" aria-label="Định vị GPS phục vụ khảo sát">
+            <div class="location-copy">
+              <strong>GPS thiết bị · theo dõi trực tiếp</strong>
+              <span>Trình duyệt sẽ hỏi quyền vị trí. Tọa độ chỉ lưu trên thiết bị khi bạn bấm ghi nhận; không gửi lên máy chủ.</span>
+            </div>
+            <div class="location-actions">
+              <button type="button" class="quiet-btn" id="start-location">Bật định vị</button>
+              <button type="button" class="quiet-btn" id="stop-location" disabled>Dừng theo dõi</button>
+              <button type="button" class="quiet-btn" id="save-location" disabled>Ghi nhận tọa độ cho điểm này</button>
+              <button type="button" class="quiet-btn" id="export-locations">Xuất tọa độ khảo sát</button>
+            </div>
+            <span class="location-readout" id="location-status" role="status" aria-live="polite">
+              Chưa bật GPS. Định vị chỉ hoạt động trên HTTPS hoặc localhost.
+            </span>
+            <span class="location-readout" id="location-captures" role="status"></span>
+          </div>
+          <div class="legend">
+            <span><i class="located"></i> Điểm có tọa độ gần đúng</span>
+            <span><i class="pending"></i> Địa bàn chưa có tọa độ — không đặt marker</span>
+            <span><i class="gps-current"></i> Vị trí GPS hiện tại + vùng sai số</span>
+            <span><i class="gps-captured"></i> Tọa độ khảo sát đã ghi nhận</span>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="live-weather-title">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">02 / Cập nhật tự động</div>
+              <h2 id="live-weather-title">Mưa dự báo và cảnh báo sạt lở/lũ quét</h2>
+            </div>
+            <span class="live-badge"><i class="live-dot"></i><span id="live-update-status">Đang kết nối nguồn…</span></span>
+          </div>
+          <div class="live-toolbar">
+            <span>Dự báo mưa tại ô lưới mô hình gần từng điểm:</span>
+            <button type="button" class="quiet-btn" id="refresh-live">Cập nhật ngay</button>
+            <span id="live-updated-at" role="status"></span>
+          </div>
+          <div class="rain-grid" id="rain-grid" aria-live="polite">
+            <p class="status-line">Đang tải dự báo mưa cho các điểm có tọa độ…</p>
+          </div>
+          <div class="rain-hourly">
+            <h3>Dự báo mưa theo giờ · <span id="rain-chart-site">điểm đang chọn</span></h3>
+            <p>mm/giờ · mô hình dự báo, không phải mưa đo tại trạm</p>
+            <div class="rain-bars" id="rain-bars" role="img" aria-label="Biểu đồ dự báo mưa theo giờ trong 24 giờ"></div>
+          </div>
+          <div class="alerts-block">
+            <h3>Cảnh báo chính thức · Trung tâm Dự báo KTTV Quốc gia</h3>
+            <p id="nchmf-status">Đang đọc danh sách bản tin công khai mới nhất…</p>
+            <p>Feed NCHMF được đọc qua máy chủ cục bộ; mở HTML trực tiếp sẽ không kích hoạt feed. Từ thư mục dự án, chạy <code>python .\research_outputs\2026-11-03_2002\03_web_map\serve_live_map.py</code>.</p>
+            <ul class="alert-list" id="nchmf-alerts" aria-live="polite"></ul>
+            <p><a href="https://www.nchmf.gov.vn/kttv/vi-VN/1/sat-lo-sut-lun-dat-da-18-18.html" target="_blank" rel="noreferrer">Mở trang cảnh báo sạt lở, sụt lún của NCHMF ↗</a> · <a href="https://www.nchmf.gov.vn/kttv/vi-VN/1/lu-quet-17-18.html" target="_blank" rel="noreferrer">Cảnh báo lũ quét ↗</a></p>
+          </div>
+          <p class="live-disclaimer">
+            Mưa Open‑Meteo là dự báo mô hình tại ô lưới lân cận; mưa GPM IMERG là ước tính vệ tinh có độ trễ. Bản tin NCHMF thường mô tả khu vực hành chính, không cung cấp tọa độ khối trượt; ứng dụng không tự gán chúng cho từng marker. Không có bản tin khớp địa bàn không đồng nghĩa an toàn. Đây là công cụ tra cứu, không thay thế cảnh báo/chỉ đạo của cơ quan chức năng.
+          </p>
+        </section>
+
+        <section class="panel" aria-labelledby="scene-title">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">03 / Quan sát</div>
+              <h2 id="scene-title">Quicklook Sentinel của điểm đang chọn</h2>
+            </div>
+            <span class="eyebrow" id="scene-count">Ảnh lưu cục bộ</span>
+          </div>
+          <div class="scene-grid">
+            <article class="scene">
+              <img id="scene-before" alt="Quicklook Sentinel trước của điểm đang chọn" loading="lazy">
+              <div class="scene-info">
+                <b id="before-title">Cảnh nền</b>
+                <span id="before-meta"></span>
+                <a id="before-source" target="_blank" rel="noreferrer">Nguồn sản phẩm ↗</a>
+              </div>
+            </article>
+            <article class="scene">
+              <img id="scene-after" alt="Quicklook Sentinel sau của điểm đang chọn" loading="lazy">
+              <div class="scene-info">
+                <b id="after-title">Cảnh mục tiêu</b>
+                <span id="after-meta"></span>
+                <a id="after-source" target="_blank" rel="noreferrer">Nguồn sản phẩm ↗</a>
+              </div>
+            </article>
+          </div>
+          <p class="scene-note" id="scene-note"></p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">04 / Ghi chép</div>
+              <h2>Phiếu giải đoán có truy vết</h2>
+            </div>
+            <span class="eyebrow">Lưu trên trình duyệt này</span>
+          </div>
+          <div class="interpret">
+            <label for="interpretation">Nhận xét quan sát</label>
+            <textarea id="interpretation" placeholder="Ghi điều nhìn thấy, không suy ra chuyển động nếu chưa có ảnh đã nắn chỉnh/kiểm chứng."></textarea>
+            <label for="confidence">Mức tin cậy của nhận xét</label>
+            <select id="confidence">
+              <option value="Chưa đánh giá">Chưa đánh giá</option>
+              <option value="Thấp — giả thuyết cần kiểm tra">Thấp — giả thuyết cần kiểm tra</option>
+              <option value="Trung bình — có bằng chứng bổ trợ">Trung bình — có bằng chứng bổ trợ</option>
+              <option value="Cao — đã kiểm tra độc lập">Cao — đã kiểm tra độc lập</option>
+            </select>
+            <div class="actions">
+              <button type="button" class="quiet-btn" id="save-note">Lưu ghi chú</button>
+              <button type="button" class="quiet-btn" id="export-notes">Xuất ghi chú JSON</button>
+              <button type="button" class="quiet-btn" id="clear-note">Xóa ghi chú điểm này</button>
+            </div>
+            <div class="saved-note" id="saved-note" role="status"></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">Hồ sơ điểm</div>
+              <h2>Thông tin từ danh mục khảo sát</h2>
+            </div>
+          </div>
+          <div class="site-detail">
+            <label class="eyebrow" for="site-select">Chọn địa điểm</label>
+            <select class="site-picker" id="site-select"></select>
+            <div class="site-title" style="margin-top:13px">
+              <div><h3 id="site-name"></h3><span class="site-id" id="site-id"></span></div>
+              <span class="tag">Sàng lọc</span>
+            </div>
+            <p id="site-location"></p>
+            <div class="facts">
+              <div class="fact"><b id="site-points">—</b><span>Số điểm theo bảng nguồn</span></div>
+              <div class="fact"><b id="site-households">—</b><span>Hộ theo hồ sơ, nếu có</span></div>
+              <div class="fact"><b id="site-coordinates">—</b><span>Tọa độ gần đúng WGS 84</span></div>
+              <div class="fact"><b id="site-survey">—</b><span>Lịch khảo sát dự kiến trong hồ sơ</span></div>
+            </div>
+            <p><strong>Mô tả trong hồ sơ:</strong> <span id="site-hazard"></span></p>
+            <p class="caution" id="site-warning"></p>
+          </div>
+          <div class="sources">
+            <details>
+              <summary>Nguồn và trạng thái xác minh</summary>
+              <p>Vị trí/mã/thuộc tính: <code>langson_agent_system/data/sites.json</code> và PDF “DanhSachDiemKhaoSat.pdf”. Tọa độ ghi trong PDF được mô tả là gần đúng. Quan trắc: <code>field_observations.csv</code> (5/5 đang pending); ảnh hiện trường đã xác minh: 0.</p>
+              <p><a href="../../../langson_agent_system/data/sites.json" target="_blank">Mở danh mục điểm ↗</a> · <a href="../../../DanhSachDiemKhaoSat.pdf" target="_blank">Mở PDF nguồn ↗</a></p>
+            </details>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Định vị</div><h2>Địa bàn chưa có tọa độ</h2></div>
+            <span class="tag">3 địa bàn</span>
+          </div>
+          <div class="unlocated">
+            <ul>
+              <li><strong>Điềm He · LS-DH-06</strong><br>Xóm Phai Duống, thôn Phù Huê · 1 điểm — cần GNSS xác minh.</li>
+              <li><strong>Thái Bình · LS-TB-07</strong><br>Hưng Thái, Bản Chu · 2 điểm — cần tách và định vị từng điểm.</li>
+              <li><strong>Nhất Hòa · LS-NH-08</strong><br>Nhiều thôn, hồ sơ ghi 26 điểm · cần tọa độ từng vị trí; không dùng một marker đại diện.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Đọc ảnh an toàn</div><h2>Giới hạn diễn giải</h2></div>
+          </div>
+          <div class="howto">
+            <ol>
+              <li>Lớp NASA VIIRS là ảnh quang học khu vực gần thời gian thực, độ phân giải gốc khoảng 375 m; không thấy mái dốc nhỏ, không phải Sentinel.</li>
+              <li>Quicklook Sentinel là ảnh xem nhanh, không phải raster phân tích đã đồng đăng ký. Metadata mây/no-data áp dụng ở mức cảnh/ô, không bảo đảm ngay tại điểm.</li>
+              <li>Cặp hiện có cách nhau 7–15 ngày; thay đổi màu giữa ảnh không tự chứng minh sạt lở hay thời điểm xảy ra.</li>
+              <li>Marker là tọa độ gần đúng của địa bàn/biểu tượng; không biểu thị footprint, ranh giới trượt, mức nguy cơ hay xác suất.</li>
+              <li>Dùng ảnh để đặt giả thuyết; xác minh bằng hồ sơ sự kiện và khảo sát địa hình/địa chất tại hiện trường.</li>
+            </ol>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="sources-footer">
+      <strong>Nguồn lớp bản đồ:</strong>
+      <a href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer" target="_blank" rel="noreferrer">Esri World Topographic Map ↗</a>
+      <a href="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer" target="_blank" rel="noreferrer">Esri World Imagery ↗</a>
+      <a href="https://nasa-gibs.github.io/gibs-api-docs/" target="_blank" rel="noreferrer">NASA GIBS documentation ↗</a>
+      <a href="https://gpm.nasa.gov/data/imerg" target="_blank" rel="noreferrer">NASA GPM IMERG ↗</a>
+      <a href="https://open-meteo.com/en/docs" target="_blank" rel="noreferrer">Open-Meteo forecast API ↗</a>
+      <a href="https://dataspace.copernicus.eu/" target="_blank" rel="noreferrer">Copernicus Data Space ↗</a>
+      <a href="https://www.nchmf.gov.vn/kttv/" target="_blank" rel="noreferrer">NCHMF · nguồn bản tin chính thức ↗</a>
+      <span>Leaflet 1.9.4 · kiểm tra tự động mỗi 15 phút · dữ liệu gốc của dự án không bị thay đổi.</span>
+    </footer>
+  </main>
+
+  <script src="./leaflet.js"></script>
+  <script>
+    "use strict";
+    const root = "../../../langson_agent_system/outputs/current/quicklooks/";
+    const sites = [
+      {
+        id: "LS-QK-01", name: "Quốc Khánh", location: "Tàng Chang, thôn Phi Mỹ (Cốc Mười cũ)",
+        lat: 22.357778, lon: 106.524722, points: 1, households: "93 (XLS)",
+        hazard: "Hồ sơ ghi tiềm ẩn sạt lở, sụt lún.",
+        survey: "11/11/2026 · 09:00 (dự kiến)",
+        warning: "Tọa độ gần đúng theo PDF. Hồ sơ gợi ý sạt lở/sụt lún; đây không phải kết luận địa kỹ thuật.",
+        before: { date: "2026-10-06", id: "S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005", cloud: 2.4, nodata: 8.305122, file: "S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(4570327d-a041-4a35-b287-e487bae95bf8)/$value" },
+        after: { date: "2026-10-14", id: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606", cloud: 26.81, nodata: 8.499435, file: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(ed8746de-f7a3-4562-b107-6a4f0ef4bdf4)/$value" },
+        note: "Cảnh nền và mục tiêu theo change_pairs.json cách nhau 8 ngày (metadata thời gian); ảnh mục tiêu có mây 26,81%. Quicklook chưa đồng đăng ký hoặc phân tích pixel."
+      },
+      {
+        id: "LS-DD-02", name: "Đồng Đăng", location: "Các thôn Tam Lung, Nhất Tâm, Phú Lộc",
+        lat: 21.950833, lon: 106.698056, points: 3, households: "56 (XLS)",
+        hazard: "Hồ sơ ghi khu vực bị ảnh hưởng sạt lở đất.",
+        survey: "11/11/2026 · 15:00 (dự kiến)",
+        warning: "Một tọa độ đại diện gần đúng cho địa bàn có nhiều thôn; cần tách và xác minh từng điểm trước khi dùng ở quy mô mái dốc.",
+        before: { date: "2026-10-06", id: "S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005", cloud: 2.4, nodata: 8.305122, file: "S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(4570327d-a041-4a35-b287-e487bae95bf8)/$value" },
+        after: { date: "2026-10-14", id: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606", cloud: 26.81, nodata: 8.499435, file: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(ed8746de-f7a3-4562-b107-6a4f0ef4bdf4)/$value" },
+        note: "Cặp cảnh dùng chung ô MGRS-48QXK trong catalog hiện có. Quicklook chỉ rà soát trực quan; chưa có phép đo biến động đã kiểm chứng."
+      },
+      {
+        id: "LS-KK-03", name: "Khánh Khê", location: "Thôn Khuổi Mạ",
+        lat: 21.868333, lon: 106.645, points: 1, households: "21 (XLS)",
+        hazard: "Hồ sơ ghi nguy cơ ảnh hưởng do sạt lở đất.",
+        survey: "12/11/2026 · 09:00 (dự kiến)",
+        warning: "Dốc SRTM hiện có là sàng lọc ở độ phân giải 30 m; không thay thế đo hình học mái dốc.",
+        before: { date: "2026-10-06", id: "S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005", cloud: 2.4, nodata: 8.305122, file: "S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(4570327d-a041-4a35-b287-e487bae95bf8)/$value" },
+        after: { date: "2026-10-14", id: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606", cloud: 26.81, nodata: 8.499435, file: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(ed8746de-f7a3-4562-b107-6a4f0ef4bdf4)/$value" },
+        note: "Cảnh mục tiêu của cặp MGRS-48QXK có mây 26,81%; dùng cảnh này để diễn giải cần đặc biệt thận trọng."
+      },
+      {
+        id: "LS-KX-04", name: "Khuất Xá", location: "Xóm Còn Chè, thôn Tam Gia",
+        lat: 21.7475, lon: 107.018333, points: 4, households: "25 (XLS)",
+        hazard: "Hồ sơ ghi sạt lở đất; 11 hộ cũ và 14 hộ phát sinh.",
+        survey: "12/11/2026 · 15:00 (dự kiến)",
+        warning: "Nhân khẩu đang mâu thuẫn: PDF ghi 80, XLS để trống. Không suy diễn dân số. Đề xuất đo vẽ cung trượt/khoan là nhiệm vụ cần chuyên gia phê duyệt.",
+        before: { date: "2026-10-01", id: "S2C_MSIL2A_20261001T031531_N0513_R118_T48QYK_20261001T081705", cloud: 9.35, nodata: 0, file: "S2C_MSIL2A_20261001T031531_N0513_R118_T48QYK_20261001T081705.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(3cb44b2c-29a4-40d5-bb85-529fe13ffca7)/$value" },
+        after: { date: "2026-10-11", id: "S2C_MSIL2A_20261011T031641_N0513_R118_T48QYK_20261011T080703", cloud: 0.82, nodata: 0, file: "S2C_MSIL2A_20261011T031641_N0513_R118_T48QYK_20261011T080703.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(e70bc868-553b-42f8-9657-c250d89c3a00)/$value" },
+        note: "Hai quicklook cùng ô MGRS-48QYK, cách nhau 10 ngày. Không có pixel registration hoặc phép phân loại biến động trong đầu ra hiện có."
+      },
+      {
+        id: "LS-CL-05", name: "Chi Lăng", location: "Thôn Hợp Tiến và thôn Hòa Bình 2",
+        lat: 21.601389, lon: 106.534722, points: 2, households: "23 (XLS; PDF để dấu gạch)",
+        hazard: "Hồ sơ XLS ghi tiềm ẩn sạt lở khối đá.",
+        survey: "13/11/2026 · 10:00 (dự kiến)",
+        warning: "PDF/XLS chưa thống nhất hộ và nhân khẩu. Quicklook cảnh 14/10 có mây 20,79%, no-data 28,82%; không đủ để kết luận biến động tại điểm.",
+        before: { date: "2026-09-29", id: "S2B_MSIL2A_20260929T032539_N0513_R018_T48QXJ_20260929T071432", cloud: 25.83, nodata: 28.35055, file: "S2B_MSIL2A_20260929T032539_N0513_R018_T48QXJ_20260929T071432.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(e20effd7-aef2-43a2-b2d3-fb8abaeac2db)/$value" },
+        after: { date: "2026-10-14", id: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXJ_20261014T082606", cloud: 20.79, nodata: 28.8248, file: "S2C_MSIL2A_20261014T032711_N0513_R018_T48QXJ_20261014T082606.jpg", url: "https://datahub.creodias.eu/odata/v1/Assets(115185b3-5a98-45c0-b0de-4593984fecf5)/$value" },
+        note: "Hai cảnh MGRS-48QXJ đều có mây và khoảng 28% no-data. Phần lớn đối tượng có thể bị che hoặc thiếu dữ liệu; không dùng cặp này để đo footprint."
+      }
+    ];
+
+    const byId = Object.fromEntries(sites.map(site => [site.id, site]));
+    const select = document.getElementById("site-select");
+    const markers = new Map();
+    const map = L.map("map", { zoomControl: true, minZoom: 4, maxZoom: 18 }).setView([21.98, 106.77], 8);
+    const topo = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 18, attribution: "Tiles &copy; Esri — sources and GIS community"
+    });
+    const imagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 18, attribution: "Imagery &copy; Esri and imagery providers"
+    });
+    const gibsBase = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/";
+    const gpmBase = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/IMERG_Precipitation_Rate_30min/default/";
+    const gibsFallbackDate = "2026-11-02";
+    let gibsDate = gibsFallbackDate;
+    let gibsLayer;
+    const gpmLayer = L.tileLayer(
+      `${gpmBase}GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
+      {
+        minZoom: 0, maxZoom: 18, maxNativeZoom: 6,
+        opacity: Number(document.getElementById("opacity").value),
+        attribution: "NASA GPM IMERG V07 NRT · 30-minute precipitation-rate estimate"
+      }
+    );
+    const status = document.getElementById("tile-status");
+    const gpmStatus = document.getElementById("gpm-status");
+
+    function makeGibsLayer(date) {
+      const layer = L.tileLayer(
+        `${gibsBase}${date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+        {
+          minZoom: 0, maxZoom: 18, maxNativeZoom: 9, opacity: Number(document.getElementById("opacity").value),
+          attribution: "NASA EOSDIS GIBS · VIIRS SNPP Corrected Reflectance True Color",
+          crossOrigin: false
+        }
+      );
+      layer.on("tileerror", () => {
+        status.textContent = `Một số ô NASA GIBS chưa có ảnh/ngày ${date}; lớp không phủ toàn bộ khu vực.`;
+      });
+      return layer;
+    }
+    topo.addTo(map);
+    gpmLayer.addTo(map);
+    gibsLayer = makeGibsLayer(gibsDate);
+    document.getElementById("live-date").textContent = "GPM IMERG · đang đọc metadata";
+    status.textContent = "Đang nạp nền địa hình và lớp mưa vệ tinh.";
+    gpmLayer.on("tileerror", () => {
+      gpmStatus.textContent = "Tile mưa GPM không tải được; kiểm tra kết nối hoặc metadata NASA.";
+      gpmStatus.classList.add("error");
+    });
+
+    function updateLiveDate(date, source) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+      const wasVisible = map.hasLayer(gibsLayer);
+      if (wasVisible) map.removeLayer(gibsLayer);
+      gibsDate = date;
+      gibsLayer = makeGibsLayer(date);
+      if (wasVisible) gibsLayer.addTo(map);
+      document.getElementById("live-date").textContent = `NASA VIIRS · ${date}`;
+      document.getElementById("tile-status").textContent = `Ngày hiệu dụng NASA WMTS: ${date} (${source}).`;
+    }
+
+    async function refreshGibsMetadata() {
+      const endpoint = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml";
+      try {
+        const response = await fetch(endpoint, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const xml = new DOMParser().parseFromString(await response.text(), "application/xml");
+        const layer = [...xml.getElementsByTagNameNS("*", "Layer")].find(node =>
+          [...node.getElementsByTagNameNS("*", "Identifier")].some(id =>
+            id.textContent.trim() === "VIIRS_SNPP_CorrectedReflectance_TrueColor"
+          )
+        );
+        const dimension = layer && [...layer.getElementsByTagNameNS("*", "Dimension")].find(node =>
+          [...node.getElementsByTagNameNS("*", "Identifier")].some(id => id.textContent.trim() === "Time")
+        );
+        const defaultNode = dimension && [...dimension.children].find(node => node.localName === "Default");
+        if (!defaultNode) throw new Error("Không thấy ngày hiệu dụng của lớp ảnh.");
+        updateLiveDate(defaultNode.textContent.trim(), "metadata live");
+      } catch (error) {
+        updateLiveDate(gibsFallbackDate, "metadata kiểm tra 03/11/2026");
+        document.getElementById("tile-status").textContent =
+          `Không đọc được metadata live (${error.message}); dùng ngày GIBS đã xác minh ${gibsFallbackDate}.`;
+      }
+    }
+    async function refreshGpmMetadata() {
+      const probe = `${gpmBase}GoogleMapsCompatible_Level6/6/27/50.png`;
+      try {
+        const response = await fetch(probe, { method: "HEAD", cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const actualTime = response.headers.get("layer-time-actual");
+        if (!actualTime || Number.isNaN(Date.parse(actualTime))) {
+          throw new Error("Tile không trả về thời điểm dữ liệu thực tế.");
+        }
+        const actualLayer = response.headers.get("layer-identifier-actual") || "IMERG";
+        const localTime = new Date(actualTime).toLocaleString("vi-VN", {
+          timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "short"
+        });
+        const ageMinutes = Math.max(0, Math.round((Date.now() - Date.parse(actualTime)) / 60000));
+        const ageHours = Math.floor(ageMinutes / 60);
+        const ageRemainder = ageMinutes % 60;
+        document.getElementById("live-date").textContent = `GPM IMERG · ${localTime}`;
+        gpmStatus.textContent =
+          `${actualLayer} · ${localTime} (GMT+7) · trễ ${ageHours ? `${ageHours} giờ ` : ""}${ageRemainder} phút`;
+        gpmStatus.classList.remove("error");
+      } catch (error) {
+        gpmStatus.textContent = `Không đọc được thời điểm ảnh GPM: ${error.message}`;
+        gpmStatus.classList.add("error");
+        document.getElementById("live-date").textContent = "GPM IMERG · metadata lỗi";
+      }
+    }
+    refreshGibsMetadata();
+    refreshGpmMetadata();
+    window.setInterval(() => {
+      gpmLayer.redraw();
+      refreshGpmMetadata();
+    }, 15 * 60 * 1000);
+    window.setInterval(refreshGibsMetadata, 6 * 60 * 60 * 1000);
+
+    const siteGroup = L.featureGroup().addTo(map);
+    const capturedGroup = L.featureGroup().addTo(map);
+    const currentLocationGroup = L.featureGroup().addTo(map);
+    const locationStatus = document.getElementById("location-status");
+    const saveLocationButton = document.getElementById("save-location");
+    const locationStorageKey = "langson-survey-location-captures-v1";
+    let locationWatchId = null;
+    let latestPosition = null;
+    let hasCenteredOnLocation = false;
+
+    function validCapture(capture) {
+      return capture && typeof capture.id === "string" &&
+        typeof capture.site_id === "string" && byId[capture.site_id] &&
+        Number.isFinite(capture.latitude) && capture.latitude >= -90 && capture.latitude <= 90 &&
+        Number.isFinite(capture.longitude) && capture.longitude >= -180 && capture.longitude <= 180 &&
+        Number.isFinite(capture.accuracy_m) && capture.accuracy_m >= 0 &&
+        typeof capture.captured_at === "string";
+    }
+    function readLocationCaptures() {
+      const saved = JSON.parse(localStorage.getItem(locationStorageKey) || "[]");
+      if (!Array.isArray(saved) || !saved.every(validCapture)) {
+        throw new Error("Dữ liệu tọa độ đã lưu không đúng định dạng; hãy xuất hoặc xử lý dữ liệu trước khi ghi thêm.");
+      }
+      return saved;
+    }
+    function renderLocationCapture(capture) {
+      const site = byId[capture.site_id];
+      const marker = L.circleMarker([capture.latitude, capture.longitude], {
+        radius: 7, color: "#fff", weight: 2, fillColor: "#6b4bb8", fillOpacity: 1
+      });
+      const popup = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = `GPS khảo sát · ${site.name} (${site.id})`;
+      const details = document.createElement("div");
+      details.textContent =
+        `${capture.latitude.toFixed(6)}, ${capture.longitude.toFixed(6)} · sai số ±${Math.round(capture.accuracy_m)} m`;
+      const time = document.createElement("div");
+      time.textContent = new Date(capture.captured_at).toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh"
+      });
+      popup.append(title, details, time);
+      marker.bindPopup(popup);
+      capturedGroup.addLayer(marker);
+    }
+    function renderLocationCaptures() {
+      const captures = readLocationCaptures();
+      capturedGroup.clearLayers();
+      captures.forEach(renderLocationCapture);
+      document.getElementById("location-captures").textContent =
+        captures.length ? `Đã ghi nhận ${captures.length} tọa độ trên thiết bị này.` : "Chưa có tọa độ khảo sát được ghi nhận.";
+    }
+    function describeLocationError(error) {
+      if (error.code === 1) return "Bạn chưa cấp quyền vị trí. Hãy cho phép trong cài đặt trình duyệt để tiếp tục.";
+      if (error.code === 2) return "Thiết bị chưa xác định được vị trí; hãy kiểm tra GPS và thử lại.";
+      if (error.code === 3) return "Định vị quá thời gian chờ; đang tiếp tục chờ bản cập nhật GPS.";
+      return `Không thể lấy vị trí: ${error.message || "lỗi không xác định"}`;
+    }
+    function updateCurrentLocation(position) {
+      latestPosition = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: position.timestamp
+      };
+      currentLocationGroup.clearLayers();
+      L.circle([latestPosition.latitude, latestPosition.longitude], {
+        radius: latestPosition.accuracy, color: "#1676c5", weight: 2,
+        fillColor: "#1676c5", fillOpacity: 0.12
+      }).addTo(currentLocationGroup);
+      L.circleMarker([latestPosition.latitude, latestPosition.longitude], {
+        radius: 8, color: "#fff", weight: 3, fillColor: "#1676c5", fillOpacity: 1
+      }).addTo(currentLocationGroup);
+      saveLocationButton.disabled = false;
+      const updatedAt = new Date(latestPosition.timestamp).toLocaleTimeString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh"
+      });
+      locationStatus.textContent =
+        `GPS đang theo dõi · ${latestPosition.latitude.toFixed(6)}, ${latestPosition.longitude.toFixed(6)} · ` +
+        `vùng sai số ±${Math.round(latestPosition.accuracy)} m · cập nhật ${updatedAt}. Sai số tùy thiết bị/môi trường.`;
+      if (!hasCenteredOnLocation) {
+        map.setView([latestPosition.latitude, latestPosition.longitude], Math.max(map.getZoom(), 15));
+        hasCenteredOnLocation = true;
+      }
+    }
+    document.getElementById("start-location").addEventListener("click", () => {
+      if (!window.isSecureContext) {
+        locationStatus.textContent = "Trình duyệt chặn GPS vì trang không dùng HTTPS/localhost. Chạy bản đồ qua serve_live_map.py.";
+        return;
+      }
+      if (!navigator.geolocation) {
+        locationStatus.textContent = "Trình duyệt này không hỗ trợ Geolocation.";
+        return;
+      }
+      if (locationWatchId !== null) return;
+      locationStatus.textContent = "Đang xin quyền và chờ tín hiệu GPS…";
+      locationWatchId = navigator.geolocation.watchPosition(
+        updateCurrentLocation,
+        error => {
+          locationStatus.textContent = describeLocationError(error);
+          if (error.code === 1) {
+            navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = null;
+            document.getElementById("start-location").disabled = false;
+            document.getElementById("stop-location").disabled = true;
+            saveLocationButton.disabled = latestPosition === null;
+          }
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+      );
+      document.getElementById("start-location").disabled = true;
+      document.getElementById("stop-location").disabled = false;
+    });
+    document.getElementById("stop-location").addEventListener("click", () => {
+      if (locationWatchId !== null) navigator.geolocation.clearWatch(locationWatchId);
+      locationWatchId = null;
+      document.getElementById("start-location").disabled = false;
+      document.getElementById("stop-location").disabled = true;
+      saveLocationButton.disabled = latestPosition === null;
+      if (latestPosition) locationStatus.textContent += " · Đã dừng theo dõi.";
+    });
+    saveLocationButton.addEventListener("click", () => {
+      if (!latestPosition) return;
+      try {
+        const captures = readLocationCaptures();
+        const capture = {
+          id: crypto.randomUUID(),
+          site_id: select.value,
+          latitude: latestPosition.latitude,
+          longitude: latestPosition.longitude,
+          accuracy_m: latestPosition.accuracy,
+          captured_at: new Date(latestPosition.timestamp).toISOString(),
+          storage: "local-only"
+        };
+        captures.push(capture);
+        localStorage.setItem(locationStorageKey, JSON.stringify(captures));
+        renderLocationCaptures();
+        locationStatus.textContent =
+          `Đã ghi nhận GPS cho ${byId[capture.site_id].name} · ${capture.latitude.toFixed(6)}, ` +
+          `${capture.longitude.toFixed(6)} · sai số ±${Math.round(capture.accuracy_m)} m. ` +
+          "Tọa độ được lưu cục bộ; không thay tọa độ tham khảo trong hồ sơ.";
+      } catch (error) {
+        locationStatus.textContent = `Không lưu được tọa độ khảo sát: ${error.message}`;
+      }
+    });
+    document.getElementById("export-locations").addEventListener("click", () => {
+      try {
+        const captures = readLocationCaptures();
+        const blob = new Blob([JSON.stringify({
+          exportedAt: new Date().toISOString(),
+          source: "Khảo sát sạt lở Lạng Sơn — tọa độ GPS do người dùng xác nhận",
+          storage: "local-only until manually exported",
+          captures
+        }, null, 2)], { type: "application/json;charset=utf-8" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "toa-do-gps-khao-sat-lang-son.json";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (error) {
+        locationStatus.textContent = `Không xuất được tọa độ khảo sát: ${error.message}`;
+      }
+    });
+    try {
+      renderLocationCaptures();
+    } catch (error) {
+      locationStatus.textContent = `Không đọc được tọa độ đã lưu: ${error.message}`;
+    }
+    function markerIcon(site, active = false) {
+      const short = site.id.split("-").slice(-1)[0];
+      return L.divIcon({
+        className: "",
+        html: `<span class="site-pin${active ? " active" : ""}">${short}</span>`,
+        iconSize: active ? [35, 35] : [29, 29],
+        iconAnchor: active ? [17, 17] : [14, 14]
+      });
+    }
+    for (const site of sites) {
+      const option = document.createElement("option");
+      option.value = site.id;
+      option.textContent = `${site.id} · ${site.name}`;
+      select.append(option);
+      const marker = L.marker([site.lat, site.lon], { icon: markerIcon(site), title: `${site.id} · ${site.name}` });
+      marker.bindPopup(
+        `<div class="popup-title">${site.name} · ${site.id}</div>` +
+        `<div class="popup-copy">${site.location}<br>WGS 84 gần đúng: ${site.lat.toFixed(6)}, ${site.lon.toFixed(6)}<br>${site.hazard}<br><b>Vị trí tham khảo, chưa phải footprint trượt.</b></div>`
+      );
+      marker.on("click", () => chooseSite(site.id, false));
+      marker.addTo(siteGroup);
+      markers.set(site.id, marker);
+    }
+
+    function setBaseLayer(name) {
+      const layer = name === "satellite" ? imagery : topo;
+      const other = name === "satellite" ? topo : imagery;
+      if (map.hasLayer(other)) map.removeLayer(other);
+      if (!map.hasLayer(layer)) layer.addTo(map);
+      document.getElementById("topo-btn").setAttribute("aria-pressed", String(name === "topo"));
+      document.getElementById("sat-btn").setAttribute("aria-pressed", String(name === "satellite"));
+    }
+    document.getElementById("topo-btn").addEventListener("click", () => setBaseLayer("topo"));
+    document.getElementById("sat-btn").addEventListener("click", () => setBaseLayer("satellite"));
+    document.getElementById("gpm-toggle").addEventListener("change", event => {
+      if (event.target.checked) gpmLayer.addTo(map);
+      else if (map.hasLayer(gpmLayer)) map.removeLayer(gpmLayer);
+    });
+    document.getElementById("nasa-toggle").addEventListener("change", event => {
+      if (event.target.checked) gibsLayer.addTo(map);
+      else if (map.hasLayer(gibsLayer)) map.removeLayer(gibsLayer);
+    });
+    document.getElementById("opacity").addEventListener("input", event => {
+      const opacity = Number(event.target.value);
+      gpmLayer.setOpacity(opacity);
+      document.getElementById("opacity-label").textContent = `${Math.round(opacity * 100)}%`;
+    });
+    topo.on("load", () => { status.textContent = "Lớp nền địa hình đã nạp."; });
+    topo.on("tileerror", () => { status.textContent = "Một số ô nền địa hình không tải được; kiểm tra kết nối."; });
+    imagery.on("tileerror", () => { status.textContent = "Một số ô ảnh Esri không tải được; kiểm tra kết nối."; });
+
+    function fmtPct(value) {
+      return value == null ? "không có metadata" : `${Number(value).toFixed(2)}%`;
+    }
+    function fillScene(side, scene) {
+      document.getElementById(`scene-${side}`).src = root + scene.file;
+      document.getElementById(`scene-${side}`).alt = `Quicklook ${scene.id}, ngày ${scene.date}`;
+      document.getElementById(`${side}-title`).textContent = side === "before" ? "Cảnh nền trong cặp hiện có" : "Cảnh mục tiêu trong cặp hiện có";
+      document.getElementById(`${side}-meta`).textContent =
+        `${scene.date} · mây ${fmtPct(scene.cloud)} · no-data ${fmtPct(scene.nodata)}`;
+      const source = document.getElementById(`${side}-source`);
+      source.href = scene.url;
+      source.title = scene.id;
+    }
+    const rainGrid = document.getElementById("rain-grid");
+    const weatherBySite = new Map();
+    const noteKey = id => `langson-interpretation-v1:${id}`;
+    function chooseSite(id, pan = true) {
+      const site = byId[id];
+      if (!site) return;
+      select.value = id;
+      document.getElementById("site-name").textContent = site.name;
+      document.getElementById("site-id").textContent = site.id;
+      document.getElementById("site-location").textContent = site.location;
+      document.getElementById("site-points").textContent = site.points;
+      document.getElementById("site-households").textContent = site.households;
+      document.getElementById("site-coordinates").textContent = `${site.lat.toFixed(6)}, ${site.lon.toFixed(6)}`;
+      document.getElementById("site-survey").textContent = site.survey.replace(" (dự kiến)", "");
+      document.getElementById("site-hazard").textContent = site.hazard;
+      document.getElementById("site-warning").textContent = site.warning;
+      document.getElementById("scene-note").textContent = site.note;
+      fillScene("before", site.before);
+      fillScene("after", site.after);
+      for (const [markerId, marker] of markers) {
+        marker.setIcon(markerIcon(byId[markerId], markerId === id));
+      }
+      loadNote(id);
+      if (pan) map.flyTo([site.lat, site.lon], Math.max(map.getZoom(), 10), { duration: .55 });
+      document.getElementById("scene-title").textContent = `Quicklook Sentinel · ${site.name}`;
+      document.querySelectorAll(".rain-card").forEach(card => {
+        card.classList.toggle("active", card.dataset.siteId === id);
+      });
+      renderRainChart(id);
+    }
+    select.addEventListener("change", () => chooseSite(select.value));
+    chooseSite(sites[0].id, false);
+
+    let refreshInProgress = false;
+    const apiTime = value => new Date(`${value}:00+07:00`);
+    const fmtMm = value => Number.isFinite(value) ? `${value.toFixed(1)} mm` : "—";
+    const haversineKm = (lat1, lon1, lat2, lon2) => {
+      const radians = degrees => degrees * Math.PI / 180;
+      const dLat = radians(lat2 - lat1);
+      const dLon = radians(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(radians(lat1)) * Math.cos(radians(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    };
+    function metric(label, value) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "rain-metric";
+      const amount = document.createElement("b");
+      amount.textContent = value;
+      const caption = document.createElement("span");
+      caption.textContent = label;
+      wrapper.append(amount, caption);
+      return wrapper;
+    }
+    function renderRainCard(site, result) {
+      const card = document.createElement("article");
+      card.className = `rain-card${site.id === select.value ? " active" : ""}`;
+      card.dataset.siteId = site.id;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.setAttribute("aria-label", `Chọn điểm ${site.name} trên bản đồ`);
+      button.addEventListener("click", () => chooseSite(site.id));
+      const heading = document.createElement("h3");
+      heading.textContent = site.name;
+      const id = document.createElement("span");
+      id.className = "rain-id";
+      id.textContent = site.id;
+      button.append(heading, id);
+      card.append(button);
+      if (result.error) {
+        const error = document.createElement("p");
+        error.className = "rain-error";
+        error.textContent = `Không tải được dự báo: ${result.error}`;
+        card.append(error);
+        return card;
+      }
+
+      const { data, summary } = result;
+      const intervalMinutes = Math.round((data.current.interval || 900) / 60);
+      const metrics = document.createElement("div");
+      metrics.className = "rain-metrics";
+      metrics.append(
+        metric(`Mưa mô hình · ${intervalMinutes} phút`, fmtMm(data.current.rain)),
+        metric("Dự báo tổng · 24 giờ", fmtMm(summary.total)),
+        metric("Mưa 1 giờ lớn nhất", fmtMm(summary.peakHour)),
+        metric("Xác suất mưa lớn nhất", Number.isFinite(summary.maxProbability)
+          ? `${summary.maxProbability}%`
+          : "—")
+      );
+      card.append(metrics);
+      const meta = document.createElement("p");
+      meta.className = "rain-meta";
+      const distance = haversineKm(site.lat, site.lon, data.latitude, data.longitude);
+      const ageMinutes = Math.max(0, Math.round((Date.now() - apiTime(data.current.time).getTime()) / 60000));
+      meta.textContent =
+        `Thời điểm mô hình: ${data.current.time} GMT+7 (trễ ~${ageMinutes} phút). ` +
+        `Ô lưới ${data.latitude.toFixed(3)}, ${data.longitude.toFixed(3)} cách tọa độ gần đúng ~${distance.toFixed(1)} km.`;
+      card.append(meta);
+      return card;
+    }
+    function renderRainGrid(results) {
+      rainGrid.replaceChildren();
+      for (const site of sites) {
+        const result = weatherBySite.get(site.id) || { error: "Chưa có dữ liệu." };
+        rainGrid.append(renderRainCard(site, result));
+      }
+      const successCount = results.filter(result => result.status === "fulfilled").length;
+      document.getElementById("live-update-status").textContent =
+        successCount === sites.length
+          ? `Dự báo ${successCount}/${sites.length} điểm đã tải`
+          : `Dự báo ${successCount}/${sites.length} điểm; một số nguồn lỗi`;
+      document.getElementById("live-update-status").parentElement.classList.toggle("status-line", successCount !== sites.length);
+      renderRainChart(select.value);
+    }
+    function renderRainChart(siteId) {
+      const site = byId[siteId];
+      const result = weatherBySite.get(siteId);
+      const chart = document.getElementById("rain-bars");
+      document.getElementById("rain-chart-site").textContent = site ? site.name : "điểm đang chọn";
+      chart.replaceChildren();
+      if (!result || result.error) {
+        chart.textContent = "Chưa có chuỗi dự báo để vẽ.";
+        return;
+      }
+      const { data } = result;
+      const start = apiTime(data.current.time).getTime();
+      const end = start + 24 * 60 * 60 * 1000;
+      const values = data.hourly.time.map((time, index) => ({
+        time,
+        amount: data.hourly.precipitation[index],
+        timestamp: apiTime(time).getTime()
+      })).filter(item => item.timestamp > start && item.timestamp <= end);
+      const maxAmount = Math.max(0, ...values.map(item => item.amount));
+      for (const item of values) {
+        const hour = document.createElement("div");
+        hour.className = "rain-hour";
+        const value = document.createElement("span");
+        value.className = "rain-hour-value";
+        value.textContent = item.amount.toFixed(1);
+        const bar = document.createElement("div");
+        bar.className = "rain-bar";
+        bar.style.height = `${Math.max(2, maxAmount ? item.amount / maxAmount * 68 : 2)}px`;
+        bar.title = `${item.time} GMT+7 · ${item.amount.toFixed(1)} mm`;
+        const time = document.createElement("span");
+        time.textContent = item.time.slice(11, 16);
+        hour.append(value, bar, time);
+        chart.append(hour);
+      }
+    }
+    async function fetchSiteWeather(site) {
+      const params = new URLSearchParams({
+        latitude: String(site.lat),
+        longitude: String(site.lon),
+        current: "precipitation,rain,showers",
+        hourly: "precipitation,rain,showers,precipitation_probability",
+        forecast_days: "3",
+        timezone: "Asia/Bangkok"
+      });
+      const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(20000)
+      });
+      if (!response.ok) throw new Error(`Open-Meteo HTTP ${response.status}`);
+      const data = await response.json();
+      const hourly = data.hourly;
+      if (!data.current?.time || !Array.isArray(hourly?.time) ||
+          !Array.isArray(hourly?.precipitation) || !Array.isArray(hourly?.precipitation_probability) ||
+          hourly.time.length !== hourly.precipitation.length ||
+          hourly.time.length !== hourly.precipitation_probability.length ||
+          !Number.isFinite(data.latitude) || !Number.isFinite(data.longitude)) {
+        throw new Error("Cấu trúc dữ liệu mưa không đầy đủ.");
+      }
+      const start = apiTime(data.current.time).getTime();
+      const end = start + 24 * 60 * 60 * 1000;
+      const indices = hourly.time.map((time, index) => ({ time: apiTime(time).getTime(), index }))
+        .filter(item => item.time > start && item.time <= end);
+      if (indices.length === 0) throw new Error("Không có dự báo theo giờ cho 24 giờ tới.");
+      const amounts = indices.map(({ index }) => hourly.precipitation[index]);
+      const probabilities = indices.map(({ index }) => hourly.precipitation_probability[index]);
+      if (amounts.some(value => !Number.isFinite(value)) ||
+          probabilities.some(value => !Number.isFinite(value))) {
+        throw new Error("Một số giá trị dự báo theo giờ bị thiếu.");
+      }
+      const summary = {
+        total: amounts.reduce((sum, value) => sum + value, 0),
+        peakHour: Math.max(...amounts),
+        maxProbability: Math.max(...probabilities)
+      };
+      return { data, summary };
+    }
+    async function refreshWeather() {
+      const results = await Promise.allSettled(sites.map(async site => {
+        try {
+          const result = await fetchSiteWeather(site);
+          weatherBySite.set(site.id, result);
+          return result;
+        } catch (error) {
+          const result = { error: error.message };
+          weatherBySite.set(site.id, result);
+          throw error;
+        }
+      }));
+      renderRainGrid(results);
+      return results.filter(result => result.status === "fulfilled").length;
+    }
+    function normalizeVi(value) {
+      return value.normalize("NFC").toLocaleLowerCase("vi-VN");
+    }
+    function renderNchmfAlerts(data) {
+      const list = document.getElementById("nchmf-alerts");
+      list.replaceChildren();
+      const warnings = Array.isArray(data.warnings) ? data.warnings : [];
+      const localWarnings = warnings.filter(item => {
+        const title = normalizeVi(item.title || "");
+        return title.includes("lạng sơn") || sites.some(site => title.includes(normalizeVi(site.name)));
+      });
+      const retrievedAt = data.retrieved_at
+        ? new Date(data.retrieved_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+        : "không rõ";
+      document.getElementById("nchmf-status").textContent =
+        `Đọc ${warnings.length} bản tin sạt lở/lũ quét mới nhất trong danh sách NCHMF lúc ${retrievedAt}; ` +
+        `${localWarnings.length} tiêu đề có nhắc Lạng Sơn hoặc trùng tên địa bàn.`;
+      if (localWarnings.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "alert-empty";
+        empty.textContent =
+          "Danh sách bản tin mới nhất đang đọc được không có tiêu đề nhắc Lạng Sơn hoặc tên điểm khảo sát. " +
+          "Nguồn chỉ hiển thị một phần bản tin mới nhất; điều này không xác nhận khu vực an toàn.";
+        list.append(empty);
+      }
+      const ordered = [...localWarnings, ...warnings.filter(item => !localWarnings.includes(item))].slice(0, 10);
+      for (const warning of ordered) {
+        const item = document.createElement("li");
+        const title = normalizeVi(warning.title || "");
+        const provinceMatch = title.includes("lạng sơn");
+        const matchingSites = sites.filter(site => title.includes(normalizeVi(site.name)));
+        const isLocal = provinceMatch || matchingSites.length > 0;
+        item.className = `alert-item${isLocal ? " local" : ""}`;
+        const link = document.createElement("a");
+        link.href = warning.url;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = warning.title || "Bản tin cảnh báo NCHMF";
+        const metadata = document.createElement("p");
+        const scope = provinceMatch
+          ? "Tiêu đề nhắc tỉnh Lạng Sơn; bản tin cấp khu vực, chưa định vị đến điểm."
+          : matchingSites.length
+            ? `Tên địa bàn trong tiêu đề: ${matchingSites.map(site => site.name).join(", ")}; cần kiểm tra nội dung bản tin.`
+            : "Bản tin vùng khác trong danh sách mới nhất; không gán cho điểm khảo sát.";
+        metadata.textContent =
+          `${warning.published_text || "Không trích được thời điểm phát hành"} · ${scope}`;
+        item.append(link, metadata);
+        list.append(item);
+      }
+    }
+    async function refreshNchmfAlerts() {
+      const response = await fetch("/api/nchmf-landslide-alerts", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || `Máy chủ bản tin HTTP ${response.status}`);
+      }
+      renderNchmfAlerts(data);
+    }
+    async function refreshLiveData() {
+      if (refreshInProgress) return;
+      refreshInProgress = true;
+      document.getElementById("live-update-status").textContent = "Đang cập nhật mưa…";
+      document.getElementById("nchmf-status").textContent = "Đang tải bản tin NCHMF…";
+      document.getElementById("refresh-live").disabled = true;
+      const [weatherResult, alertResult] = await Promise.allSettled([
+        refreshWeather(),
+        refreshNchmfAlerts()
+      ]);
+      const errors = [];
+      if (weatherResult.status === "rejected") errors.push(`mưa: ${weatherResult.reason.message}`);
+      if (alertResult.status === "rejected") {
+        document.getElementById("nchmf-status").textContent =
+          `Không đọc được feed NCHMF: ${alertResult.reason.message}. Mở liên kết nguồn chính thức để kiểm tra trực tiếp.`;
+        errors.push("bản tin NCHMF");
+      }
+      const updatedAt = new Date().toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "short"
+      });
+      document.getElementById("live-updated-at").textContent =
+        `Lần kiểm tra trình duyệt: ${updatedAt} (GMT+7)${errors.length ? ` · lỗi ${errors.join(", ")}` : ""}`;
+      document.getElementById("refresh-live").disabled = false;
+      refreshInProgress = false;
+    }
+    document.getElementById("refresh-live").addEventListener("click", refreshLiveData);
+    refreshLiveData();
+    window.setInterval(refreshLiveData, 15 * 60 * 1000);
+
+    function loadNote(id) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(noteKey(id)) || "null");
+        document.getElementById("interpretation").value = saved?.text || "";
+        document.getElementById("confidence").value = saved?.confidence || "Chưa đánh giá";
+        document.getElementById("saved-note").textContent = saved ? `Đã lưu cục bộ · ${saved.savedAt}` : "";
+      } catch (error) {
+        document.getElementById("saved-note").textContent = `Không đọc được ghi chú cục bộ: ${error.message}`;
+      }
+    }
+    document.getElementById("save-note").addEventListener("click", () => {
+      const id = select.value;
+      const saved = {
+        site_id: id,
+        scene_ids: [byId[id].before.id, byId[id].after.id],
+        text: document.getElementById("interpretation").value.trim(),
+        confidence: document.getElementById("confidence").value,
+        savedAt: new Date().toISOString(),
+        disclaimer: "Ghi chú giải đoán sơ bộ của người dùng; không phải kết luận đã kiểm chứng."
+      };
+      try {
+        localStorage.setItem(noteKey(id), JSON.stringify(saved));
+        document.getElementById("saved-note").textContent = `Đã lưu cục bộ · ${saved.savedAt}`;
+      } catch (error) {
+        document.getElementById("saved-note").textContent = `Không lưu được ghi chú: ${error.message}`;
+      }
+    });
+    document.getElementById("clear-note").addEventListener("click", () => {
+      const id = select.value;
+      try {
+        localStorage.removeItem(noteKey(id));
+        loadNote(id);
+      } catch (error) {
+        document.getElementById("saved-note").textContent = `Không xóa được ghi chú: ${error.message}`;
+      }
+    });
+    document.getElementById("export-notes").addEventListener("click", () => {
+      const notes = [];
+      for (const site of sites) {
+        try {
+          const value = localStorage.getItem(noteKey(site.id));
+          if (value) notes.push(JSON.parse(value));
+        } catch (error) {
+          document.getElementById("saved-note").textContent = `Ghi chú ${site.id} lỗi, chưa thể xuất: ${error.message}`;
+          return;
+        }
+      }
+      const blob = new Blob([JSON.stringify({
+        exportedAt: new Date().toISOString(),
+        source: "Bản đồ khảo sát sạt lở Lạng Sơn — ghi chú trình duyệt",
+        notes
+      }, null, 2)], { type: "application/json;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "ghi-chu-giai-doan-lang-son.json";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+    map.whenReady(() => {
+      siteGroup.bringToFront();
+      document.getElementById("tile-status").textContent = "Bản đồ sẵn sàng; ô ảnh được tải từ dịch vụ trực tuyến.";
+    });
+  </script>
+</body>
+</html>
