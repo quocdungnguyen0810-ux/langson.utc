@@ -92,6 +92,7 @@
     .location-actions { display: flex; flex-wrap: wrap; gap: 6px; }
     .location-readout { flex-basis: 100%; }
     .quiet-btn:disabled { cursor: not-allowed; opacity: .55; }
+    .quiet-btn.danger { border-color: #e4c9c4; color: #8d3026; }
     .map-wrap { position: relative; }
     #map { width: 100%; height: min(61vh, 650px); min-height: 420px; background: #e5ece5; }
     .map-foot {
@@ -281,9 +282,9 @@
           <div class="panel-head">
             <div>
               <div class="eyebrow">01 / Không gian</div>
-              <h2 id="map-title">Bản đồ địa hình & ảnh gần thời gian thực</h2>
+              <h2 id="map-title">Bản đồ địa hình & lớp ảnh vệ tinh</h2>
             </div>
-            <span class="live-badge"><i class="live-dot"></i><span id="live-date">Đang kiểm tra NASA GIBS…</span></span>
+            <span class="live-badge"><i class="live-dot"></i><span id="live-date">Ảnh vệ tinh · độ mới theo từng nguồn</span></span>
           </div>
           <div class="map-toolbar">
             <span class="tool-label">Nền:</span>
@@ -299,6 +300,7 @@
           <div class="map-wrap"><div id="map" aria-label="Bản đồ tương tác các điểm khảo sát"></div></div>
           <div class="map-foot">
             <span id="tile-status" class="status-line">Đang tải bản đồ nền…</span>
+            <span id="gibs-status" class="status-line">Đang kiểm tra metadata NASA VIIRS…</span>
             <span id="gpm-status" class="status-line">Đang đọc thời điểm ảnh GPM…</span>
             <span>IMERG là ước tính mưa vệ tinh ~10 km; không phải số đo trạm. Ảnh Esri là mosaic, không phải ảnh trực tiếp.</span>
             <a href="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml" target="_blank" rel="noreferrer">Metadata NASA WMTS ↗</a>
@@ -313,11 +315,12 @@
               <button type="button" class="quiet-btn" id="stop-location" disabled>Dừng theo dõi</button>
               <button type="button" class="quiet-btn" id="save-location" disabled>Ghi nhận tọa độ cho điểm này</button>
               <button type="button" class="quiet-btn" id="export-locations">Xuất tọa độ khảo sát</button>
+              <button type="button" class="quiet-btn danger" id="clear-locations" disabled>Xóa tọa độ đã lưu</button>
             </div>
             <span class="location-readout" id="location-status" role="status" aria-live="polite">
               Chưa bật GPS. Định vị chỉ hoạt động trên HTTPS hoặc localhost.
             </span>
-            <span class="location-readout" id="location-captures" role="status"></span>
+            <span class="location-readout" id="location-captures" role="status" aria-live="polite"></span>
           </div>
           <div class="legend">
             <span><i class="located"></i> Điểm có tọa độ gần đúng</span>
@@ -351,7 +354,7 @@
           <div class="alerts-block">
             <h3>Cảnh báo chính thức · Trung tâm Dự báo KTTV Quốc gia</h3>
             <p id="nchmf-status">Đang đọc danh sách bản tin công khai mới nhất…</p>
-            <p>Feed NCHMF được đọc qua máy chủ cục bộ; mở HTML trực tiếp sẽ không kích hoạt feed. Từ thư mục dự án, chạy <code>python .\research_outputs\2026-11-03_2002\03_web_map\serve_live_map.py</code>.</p>
+            <p>Bản GitHub Pages là website tĩnh, không có máy chủ trung gian để đọc feed NCHMF; dùng các liên kết chính thức bên dưới. Khi chạy local, feed hoạt động qua <code>serve_live_map.py</code>. Dự báo và ảnh vệ tinh được làm mới định kỳ, không phải số đo trực tiếp tại trạm.</p>
             <ul class="alert-list" id="nchmf-alerts" aria-live="polite"></ul>
             <p><a href="https://www.nchmf.gov.vn/kttv/vi-VN/1/sat-lo-sut-lun-dat-da-18-18.html" target="_blank" rel="noreferrer">Mở trang cảnh báo sạt lở, sụt lún của NCHMF ↗</a> · <a href="https://www.nchmf.gov.vn/kttv/vi-VN/1/lu-quet-17-18.html" target="_blank" rel="noreferrer">Cảnh báo lũ quét ↗</a></p>
           </div>
@@ -445,8 +448,8 @@
           <div class="sources">
             <details>
               <summary>Nguồn và trạng thái xác minh</summary>
-              <p>Vị trí/mã/thuộc tính: <code>langson_agent_system/data/sites.json</code> và PDF “DanhSachDiemKhaoSat.pdf”. Tọa độ ghi trong PDF được mô tả là gần đúng. Quan trắc: <code>field_observations.csv</code> (5/5 đang pending); ảnh hiện trường đã xác minh: 0.</p>
-              <p><a href="../../../langson_agent_system/data/sites.json" target="_blank">Mở danh mục điểm ↗</a> · <a href="../../../DanhSachDiemKhaoSat.pdf" target="_blank">Mở PDF nguồn ↗</a></p>
+              <p>Vị trí, mã và thuộc tính được tổng hợp từ danh mục/PDF khảo sát trong hồ sơ dự án; các tọa độ trên bản đồ là gần đúng. Tọa độ GPS và phiếu khảo sát do người dùng ghi nhận chỉ lưu trong trình duyệt này; không tải lên GitHub hay chia sẻ với người dùng khác.</p>
+              <p>Danh sách hộ và tài liệu nguồn không được đóng gói vào website công khai. GPS cần HTTPS, quyền định vị và trang đang mở; độ chính xác phụ thuộc thiết bị/môi trường. Hãy xuất dữ liệu để sao lưu trước khi xóa dữ liệu trình duyệt.</p>
             </details>
           </div>
         </section>
@@ -498,7 +501,9 @@
   <script src="./leaflet.js"></script>
   <script>
     "use strict";
-    const root = "../../../langson_agent_system/outputs/current/quicklooks/";
+    const root = window.location.pathname.includes("/03_web_map/")
+      ? "../../../langson_agent_system/outputs/current/quicklooks/"
+      : "./quicklooks/";
     const sites = [
       {
         id: "LS-QK-01", name: "Quốc Khánh", location: "Tàng Chang, thôn Phi Mỹ (Cốc Mười cũ)",
@@ -576,6 +581,7 @@
       }
     );
     const status = document.getElementById("tile-status");
+    const gibsStatus = document.getElementById("gibs-status");
     const gpmStatus = document.getElementById("gpm-status");
 
     function makeGibsLayer(date) {
@@ -588,14 +594,13 @@
         }
       );
       layer.on("tileerror", () => {
-        status.textContent = `Một số ô NASA GIBS chưa có ảnh/ngày ${date}; lớp không phủ toàn bộ khu vực.`;
+        gibsStatus.textContent = `Một số ô NASA GIBS chưa có ảnh/ngày ${date}; lớp không phủ toàn bộ khu vực.`;
       });
       return layer;
     }
     topo.addTo(map);
     gpmLayer.addTo(map);
     gibsLayer = makeGibsLayer(gibsDate);
-    document.getElementById("live-date").textContent = "GPM IMERG · đang đọc metadata";
     status.textContent = "Đang nạp nền địa hình và lớp mưa vệ tinh.";
     gpmLayer.on("tileerror", () => {
       gpmStatus.textContent = "Tile mưa GPM không tải được; kiểm tra kết nối hoặc metadata NASA.";
@@ -609,14 +614,16 @@
       gibsDate = date;
       gibsLayer = makeGibsLayer(date);
       if (wasVisible) gibsLayer.addTo(map);
-      document.getElementById("live-date").textContent = `NASA VIIRS · ${date}`;
-      document.getElementById("tile-status").textContent = `Ngày hiệu dụng NASA WMTS: ${date} (${source}).`;
+      gibsStatus.textContent = `Ngày hiệu dụng NASA WMTS: ${date} (${source}).`;
     }
 
     async function refreshGibsMetadata() {
       const endpoint = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml";
       try {
-        const response = await fetch(endpoint, { cache: "no-store" });
+        const response = await fetch(endpoint, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000)
+        });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const xml = new DOMParser().parseFromString(await response.text(), "application/xml");
         const layer = [...xml.getElementsByTagNameNS("*", "Layer")].find(node =>
@@ -631,15 +638,19 @@
         if (!defaultNode) throw new Error("Không thấy ngày hiệu dụng của lớp ảnh.");
         updateLiveDate(defaultNode.textContent.trim(), "metadata live");
       } catch (error) {
-        updateLiveDate(gibsFallbackDate, "metadata kiểm tra 03/11/2026");
-        document.getElementById("tile-status").textContent =
-          `Không đọc được metadata live (${error.message}); dùng ngày GIBS đã xác minh ${gibsFallbackDate}.`;
+        updateLiveDate(gibsFallbackDate, "ngày dự phòng");
+        gibsStatus.textContent =
+          `Không đọc được metadata NASA trực tiếp (${error.message}); ảnh dùng ngày dự phòng ${gibsFallbackDate}, độ mới chưa xác nhận.`;
       }
     }
     async function refreshGpmMetadata() {
       const probe = `${gpmBase}GoogleMapsCompatible_Level6/6/27/50.png`;
       try {
-        const response = await fetch(probe, { method: "HEAD", cache: "no-store" });
+        const response = await fetch(probe, {
+          method: "HEAD",
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000)
+        });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const actualTime = response.headers.get("layer-time-actual");
         if (!actualTime || Number.isNaN(Date.parse(actualTime))) {
@@ -652,14 +663,12 @@
         const ageMinutes = Math.max(0, Math.round((Date.now() - Date.parse(actualTime)) / 60000));
         const ageHours = Math.floor(ageMinutes / 60);
         const ageRemainder = ageMinutes % 60;
-        document.getElementById("live-date").textContent = `GPM IMERG · ${localTime}`;
         gpmStatus.textContent =
           `${actualLayer} · ${localTime} (GMT+7) · trễ ${ageHours ? `${ageHours} giờ ` : ""}${ageRemainder} phút`;
         gpmStatus.classList.remove("error");
       } catch (error) {
         gpmStatus.textContent = `Không đọc được thời điểm ảnh GPM: ${error.message}`;
         gpmStatus.classList.add("error");
-        document.getElementById("live-date").textContent = "GPM IMERG · metadata lỗi";
       }
     }
     refreshGibsMetadata();
@@ -675,6 +684,7 @@
     const currentLocationGroup = L.featureGroup().addTo(map);
     const locationStatus = document.getElementById("location-status");
     const saveLocationButton = document.getElementById("save-location");
+    const clearLocationButton = document.getElementById("clear-locations");
     const locationStorageKey = "langson-survey-location-captures-v1";
     let locationWatchId = null;
     let latestPosition = null;
@@ -718,6 +728,7 @@
       const captures = readLocationCaptures();
       capturedGroup.clearLayers();
       captures.forEach(renderLocationCapture);
+      clearLocationButton.disabled = captures.length === 0;
       document.getElementById("location-captures").textContent =
         captures.length ? `Đã ghi nhận ${captures.length} tọa độ trên thiết bị này.` : "Chưa có tọa độ khảo sát được ghi nhận.";
     }
@@ -830,6 +841,16 @@
         URL.revokeObjectURL(link.href);
       } catch (error) {
         locationStatus.textContent = `Không xuất được tọa độ khảo sát: ${error.message}`;
+      }
+    });
+    clearLocationButton.addEventListener("click", () => {
+      if (!window.confirm("Xóa toàn bộ tọa độ khảo sát đã lưu trên trình duyệt này? Không thể hoàn tác nếu chưa xuất dữ liệu.")) return;
+      try {
+        localStorage.removeItem(locationStorageKey);
+        renderLocationCaptures();
+        locationStatus.textContent = "Đã xóa các tọa độ khảo sát đã lưu trên thiết bị này.";
+      } catch (error) {
+        locationStatus.textContent = `Không xóa được tọa độ khảo sát: ${error.message}`;
       }
     });
     try {
@@ -1157,6 +1178,11 @@
       }
     }
     async function refreshNchmfAlerts() {
+      const localProxyAvailable = ["localhost", "127.0.0.1", "[::1]"].includes(window.location.hostname) &&
+        window.location.pathname.includes("/research_outputs/2026-11-03_2002/03_web_map/");
+      if (!localProxyAvailable) {
+        throw new Error("GitHub Pages chỉ phục vụ trang tĩnh, không có API máy chủ NCHMF. Hãy mở liên kết nguồn chính thức bên dưới.");
+      }
       const response = await fetch("/api/nchmf-landslide-alerts", { cache: "no-store" });
       const data = await response.json();
       if (!response.ok || data.error) {
@@ -1177,8 +1203,10 @@
       const errors = [];
       if (weatherResult.status === "rejected") errors.push(`mưa: ${weatherResult.reason.message}`);
       if (alertResult.status === "rejected") {
-        document.getElementById("nchmf-status").textContent =
-          `Không đọc được feed NCHMF: ${alertResult.reason.message}. Mở liên kết nguồn chính thức để kiểm tra trực tiếp.`;
+        const message = alertResult.reason instanceof Error ? alertResult.reason.message : String(alertResult.reason);
+        document.getElementById("nchmf-status").textContent = message.startsWith("GitHub Pages")
+          ? message
+          : `Không đọc được feed NCHMF: ${message}. Mở liên kết nguồn chính thức để kiểm tra trực tiếp.`;
         errors.push("bản tin NCHMF");
       }
       const updatedAt = new Date().toLocaleString("vi-VN", {
