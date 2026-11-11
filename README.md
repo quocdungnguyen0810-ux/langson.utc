@@ -1,15 +1,18 @@
-# WebGIS khảo sát sạt lở Lạng Sơn
+# WebGIS & Hệ thống Nhật ký Tọa độ Khảo sát Sạt lở Lạng Sơn
 
-Static Leaflet map for the Lạng Sơn field survey. The public GitHub Pages site is:
+Static Leaflet map, Geotechnical Coordinate Logbook, and 19-Agent Dashboard for the Lạng Sơn field survey. The public GitHub Pages site is:
 
-<https://quocdungnguyen0810-ux.github.io/langson.utc/>
+- **Bản đồ WebGIS & Nhật ký Tọa độ GPS**: <https://quocdungnguyen0810-ux.github.io/langson.utc/ban-do-phan-tich-sat-lo.html>
+- **Công cụ Định vị Tọa độ, Ghi chú Địa kỹ thuật & Xuất Excel / Word**: <https://quocdungnguyen0810-ux.github.io/langson.utc/cong-cu-ghi-chu-toa-do.html>
+- **Dashboard Đa tác tử Cảnh báo Sạt lở (19 Agents)**: <https://quocdungnguyen0810-ux.github.io/langson.utc/canh-bao-sat-lo-lang-son.html>
 
 Leaflet 1.9.4 is bundled for offline library loading; its BSD 2-Clause license is included in `THIRD_PARTY_LICENSES.txt`.
 
 ## Live behavior and limits
 
 - Device GPS is requested only after the user selects **Bật định vị** and grants browser permission. The watch updates while the page is open; accuracy is reported by the device and is not guaranteed.
-- GPS captures and interpretation notes are kept in that browser profile's `localStorage`. They are not encrypted, uploaded, or synchronized with other users. Export JSON backups before clearing browser data or using **Xóa tọa độ đã lưu**.
+- Each saved coordinate point (`captures` / `waypoints`) supports multiple chronological field survey log notes (`log_entries` managed by `survey-logbook` & `physical-quarantine` agents) and direct client-side export to Excel (`.xlsx`), Word (`.docx`), and JSON (`.json`).
+- GPS captures and interpretation notes are kept in that browser profile's `localStorage`. They are not encrypted, uploaded, or synchronized with other users. Export Excel/Word/JSON backups before clearing browser data or using **Xóa tọa độ đã lưu**.
 - NASA GPM imagery and Open-Meteo forecasts are refreshed periodically from their public services. GPM is delayed satellite precipitation estimation; Open-Meteo is a model forecast, not a local rain-gauge observation. NASA VIIRS image availability also has a delay. “Live” does not mean real-time field measurements.
 - The NCHMF alert proxy runs only in the local Python server. GitHub Pages is static and cannot run that API; use the official NCHMF links on the map for current bulletins.
 - Survey markers from the source records are approximate locations, not landslide boundaries. The public site does not include field GPS captures or source PDFs.

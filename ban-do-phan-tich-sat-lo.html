@@ -228,6 +228,77 @@
     }
     .site-pin.active { width: 35px; height: 35px; border-color: #e7f2ce; background: #174d43; font-size: 11px; }
     .site-pin.unlocated-pin { background: #78858b; }
+    .captures-logbook-wrap {
+      padding: 10px 12px 14px;
+      border-top: 1px solid #e8eeea;
+      background: #fbfcfa;
+    }
+    .captures-table-scroll {
+      overflow-x: auto;
+      max-inline-size: 100%;
+      max-block-size: 340px;
+      border: 1px solid #d7dfdc;
+      border-radius: 6px;
+      background: #fff;
+      margin-top: 8px;
+    }
+    .captures-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 11px;
+    }
+    .captures-table th, .captures-table td {
+      padding: 7px 9px;
+      border-bottom: 1px solid #e8eeea;
+      text-align: left;
+      vertical-align: top;
+    }
+    .captures-table thead th {
+      position: sticky;
+      inset-block-start: 0;
+      background: #174d43;
+      color: #fff;
+      font-weight: 600;
+      white-space: nowrap;
+      z-index: 2;
+    }
+    dialog:modal {
+      border: 1px solid #bfd4c8;
+      border-radius: 9px;
+      padding: 16px;
+      max-inline-size: min(92vw, 560px);
+      width: 100%;
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 18px 42px rgba(23, 42, 53, 0.25);
+    }
+    dialog::backdrop {
+      background: rgba(23, 42, 53, 0.5);
+      backdrop-filter: blur(2px);
+    }
+    body:has(dialog[open]) {
+      overflow: hidden;
+    }
+    .dlg-field {
+      margin-bottom: 10px;
+    }
+    .dlg-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #23453b;
+    }
+    .dlg-field input, .dlg-field select, .dlg-field textarea {
+      width: 100%;
+      border: 1px solid #cfdad5;
+      border-radius: 5px;
+      padding: 7px 9px;
+      font-size: 13px;
+      background: #fff;
+      color: var(--ink);
+    }
     @media (max-width: 1050px) {
       .grid { grid-template-columns: minmax(0, 1fr) 330px; }
       .scene img { height: 190px; }
@@ -270,10 +341,14 @@
   <main>
     <div class="intro">
       <div>
-        <h2>Vị trí khảo sát và chồng lớp ảnh tham khảo</h2>
-        <p>Chọn điểm để xem tọa độ nguồn, trạng thái dữ liệu và ảnh Sentinel đang có. Các dấu vị trí được lấy từ PDF khảo sát; chúng là vị trí gần đúng, không phải ranh giới khối trượt đã đo.</p>
+        <h2>Vị trí khảo sát, Nhật ký tọa độ lưu và chồng lớp ảnh tham khảo</h2>
+        <p>Chọn điểm để xem tọa độ nguồn, tạo ghi chú nhật ký khảo sát cho từng điểm lưu tọa độ và xuất đồng bộ cùng bảng tọa độ lưu (Excel / Word / JSON). Các dấu vị trí từ PDF là vị trí gần đúng, không phải ranh giới khối trượt đã đo.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+          <a href="./cong-cu-ghi-chu-toa-do.html" class="quiet-btn" style="text-decoration:none;font-weight:700;border-color:#174d43;color:#174d43">🧭 Mở Công cụ Ghi chú Điểm Định vị & Bản đồ Địa chất</a>
+          <a href="./canh-bao-sat-lo-lang-son.html" class="quiet-btn" style="text-decoration:none;font-weight:700;border-color:#176f96;color:#176f96">📊 Mở Dashboard Cảnh báo Sạt lở Đa tác tử (19 Agents)</a>
+        </div>
       </div>
-      <div class="stamp">Hồ sơ dự án · snapshot 03/11/2026</div>
+      <div class="stamp">Hồ sơ dự án · cập nhật 11/11/2026</div>
     </div>
 
     <div class="grid">
@@ -305,22 +380,47 @@
             <span>IMERG là ước tính mưa vệ tinh ~10 km; không phải số đo trạm. Ảnh Esri là mosaic, không phải ảnh trực tiếp.</span>
             <a href="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml" target="_blank" rel="noreferrer">Metadata NASA WMTS ↗</a>
           </div>
-          <div class="location-toolbar" aria-label="Định vị GPS phục vụ khảo sát">
+          <div class="location-toolbar" aria-label="Định vị GPS và Sổ Nhật ký Tọa độ Khảo sát">
             <div class="location-copy">
-              <strong>GPS thiết bị · theo dõi trực tiếp</strong>
-              <span>Trình duyệt sẽ hỏi quyền vị trí. Tọa độ chỉ lưu trên thiết bị khi bạn bấm ghi nhận; không gửi lên máy chủ.</span>
+              <strong>GPS thiết bị & Nhật ký điểm lưu tọa độ (Tác tử survey-logbook)</strong>
+              <span>Ghi nhận tọa độ từ GPS thiết bị hoặc nhấp lưu tâm bản đồ, tạo ghi chú địa kỹ thuật cho từng điểm lưu tọa độ và xuất Bảng tọa độ kèm Nhật ký khảo sát (.xlsx / .docx / .json).</span>
             </div>
             <div class="location-actions">
               <button type="button" class="quiet-btn" id="start-location">Bật định vị</button>
               <button type="button" class="quiet-btn" id="stop-location" disabled>Dừng theo dõi</button>
               <button type="button" class="quiet-btn" id="save-location" disabled>Ghi nhận tọa độ cho điểm này</button>
-              <button type="button" class="quiet-btn" id="export-locations">Xuất tọa độ khảo sát</button>
+              <button type="button" class="quiet-btn" id="save-map-center-location" style="border-color:#174d43;color:#174d43;font-weight:700">➕ Lưu điểm tọa độ & Tạo ghi chú</button>
+              <button type="button" class="quiet-btn" id="seed-project-waypoints">📥 Nạp 8 điểm mốc CV 6666</button>
+              <button type="button" class="quiet-btn" id="export-locations-xlsx" style="background:#174d43;color:#fff;border-color:#174d43;font-weight:700">📊 Xuất Nhật ký & Bảng tọa độ (.xlsx)</button>
+              <button type="button" class="quiet-btn" id="export-locations-docx" style="background:#176f96;color:#fff;border-color:#176f96;font-weight:700">📄 Xuất Sổ Nhật ký (.docx)</button>
+              <button type="button" class="quiet-btn" id="export-locations">Xuất tọa độ khảo sát (.json)</button>
               <button type="button" class="quiet-btn danger" id="clear-locations" disabled>Xóa tọa độ đã lưu</button>
             </div>
             <span class="location-readout" id="location-status" role="status" aria-live="polite">
-              Chưa bật GPS. Định vị chỉ hoạt động trên HTTPS hoặc localhost.
+              Chưa bật GPS. Định vị chỉ hoạt động trên HTTPS hoặc localhost (hoặc bấm "➕ Lưu điểm tọa độ & Tạo ghi chú" để lưu tọa độ tâm bản đồ).
             </span>
             <span class="location-readout" id="location-captures" role="status" aria-live="polite"></span>
+          </div>
+          <div class="captures-logbook-wrap" aria-label="Bảng tọa độ lưu và nhật ký khảo sát">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <strong style="font-size:12px;color:#174d43">📋 Bảng Tọa Độ Đã Lưu & Ghi Chú Nhật Ký Khảo Sát Hiện Trường</strong>
+              <span style="font-size:10px;color:var(--muted)">Nhấp "📝 Ghi chú Nhật ký" trên từng điểm lưu tọa độ để thêm/cập nhật nhật ký khảo sát</span>
+            </div>
+            <div tabindex="0" role="region" aria-label="Bảng tọa độ khảo sát đã lưu và ghi chú nhật ký" class="captures-table-scroll">
+              <table class="captures-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Mã Điểm / Khu vực</th>
+                    <th scope="col">Tọa độ Lưu WGS 84 & DMS</th>
+                    <th scope="col">Sai số & Thời gian</th>
+                    <th scope="col">Ghi chú Nhật ký Khảo sát & Kiến nghị</th>
+                    <th scope="col">Kiểm định Vật lý</th>
+                    <th scope="col">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="captures-logbook-tbody"></tbody>
+              </table>
+            </div>
           </div>
           <div class="legend">
             <span><i class="located"></i> Điểm có tọa độ gần đúng</span>
@@ -329,6 +429,77 @@
             <span><i class="gps-captured"></i> Tọa độ khảo sát đã ghi nhận</span>
           </div>
         </section>
+
+        <!-- Hộp thoại tạo/cập nhật ghi chú Nhật ký cho điểm lưu tọa độ -->
+        <dialog id="capture-note-dialog" closedby="any" aria-labelledby="capture-dlg-title">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px">
+            <h3 id="capture-dlg-title" style="margin:0;font-size:15px;color:#174d43">📝 Ghi chú Nhật ký cho Điểm Lưu Tọa độ</h3>
+            <button type="button" class="quiet-btn" id="close-capture-dlg">✖ Đóng</button>
+          </div>
+          <form id="capture-note-form" method="dialog">
+            <input type="hidden" id="cap-dlg-id">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="dlg-field">
+                <label for="cap-dlg-site">Địa điểm khảo sát (Site ID)</label>
+                <select id="cap-dlg-site">
+                  <option value="LS-QK-01">LS-QK-01 · Quốc Khánh</option>
+                  <option value="LS-DD-02">LS-DD-02 · Đồng Đăng</option>
+                  <option value="LS-KK-03">LS-KK-03 · Khánh Khê</option>
+                  <option value="LS-KX-04">LS-KX-04 · Khuất Xá</option>
+                  <option value="LS-CL-05">LS-CL-05 · Chi Lăng</option>
+                  <option value="LS-DH-06">LS-DH-06 · Điềm He (Khẩn cấp)</option>
+                  <option value="LS-TB-07">LS-TB-07 · Thái Bình</option>
+                  <option value="LS-NH-08">LS-NH-08 · Nhất Hòa</option>
+                </select>
+              </div>
+              <div class="dlg-field">
+                <label for="cap-dlg-category">Hạng mục ghi chú nhật ký</label>
+                <select id="cap-dlg-category">
+                  <option value="Khảo sát Địa kỹ thuật & Mái dốc">Khảo sát Địa kỹ thuật & Mái dốc</option>
+                  <option value="Đo đạc GPS & Khống chế tọa độ">Đo đạc GPS & Khống chế tọa độ</option>
+                  <option value="Quan trắc vết nứt & Nước ngầm">Quan trắc vết nứt & Nước ngầm</option>
+                  <option value="Đánh giá hộ dân & Tái định cư">Đánh giá hộ dân & Tái định cư</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div class="dlg-field">
+                <label for="cap-dlg-lat">Vĩ độ WGS 84 (°B)</label>
+                <input type="text" inputmode="decimal" id="cap-dlg-lat" placeholder="VD: 22.357778">
+              </div>
+              <div class="dlg-field">
+                <label for="cap-dlg-lon">Kinh độ WGS 84 (°Đ)</label>
+                <input type="text" inputmode="decimal" id="cap-dlg-lon" placeholder="VD: 106.524722">
+              </div>
+              <div class="dlg-field">
+                <label for="cap-dlg-acc">Sai số GPS (±m)</label>
+                <input type="text" inputmode="decimal" id="cap-dlg-acc" placeholder="VD: 4.5">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="dlg-field">
+                <label for="cap-dlg-slope">Thông số mái dốc / Vết nứt (H, β, rộng nứt)</label>
+                <input type="text" id="cap-dlg-slope" placeholder="VD: H=25m, β=40°, nứt rộng 30mm">
+              </div>
+              <div class="dlg-field">
+                <label for="cap-dlg-author">Người ghi nhật ký</label>
+                <input type="text" id="cap-dlg-author" value="Tổ Khảo sát Địa kỹ thuật">
+              </div>
+            </div>
+            <div class="dlg-field">
+              <label for="cap-dlg-note">Nội dung ghi chú nhật ký khảo sát tại điểm tọa độ này *</label>
+              <textarea id="cap-dlg-note" rows="3" required placeholder="Ghi rõ quan sát địa chất, vết nứt đỉnh/sườn dốc, biểu hiện nước ngầm, khoảng cách tới hộ dân/đường giao thông..."></textarea>
+            </div>
+            <div class="dlg-field">
+              <label for="cap-dlg-rec">Kiến nghị xử lý / Hành động tiếp theo</label>
+              <input type="text" id="cap-dlg-rec" placeholder="VD: Cắm cọc tiêu quan trắc, phủ bạt chống thấm, di dời khẩn cấp...">
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+              <button type="button" class="quiet-btn" id="cancel-capture-dlg">Hủy</button>
+              <button type="submit" class="quiet-btn" style="background:#174d43;color:#fff;border-color:#174d43;font-weight:700">💾 Lưu Điểm Tọa độ & Nhật ký</button>
+            </div>
+          </form>
+        </dialog>
 
         <section class="panel" aria-labelledby="live-weather-title">
           <div class="panel-head">
@@ -690,47 +861,350 @@
     let latestPosition = null;
     let hasCenteredOnLocation = false;
 
-    function validCapture(capture) {
-      return capture && typeof capture.id === "string" &&
-        typeof capture.site_id === "string" && byId[capture.site_id] &&
-        Number.isFinite(capture.latitude) && capture.latitude >= -90 && capture.latitude <= 90 &&
-        Number.isFinite(capture.longitude) && capture.longitude >= -180 && capture.longitude <= 180 &&
-        Number.isFinite(capture.accuracy_m) && capture.accuracy_m >= 0 &&
-        typeof capture.captured_at === "string";
+    const siteNameMap = {
+      "LS-QK-01": "Quốc Khánh",
+      "LS-DD-02": "Đồng Đăng",
+      "LS-KK-03": "Khánh Khê",
+      "LS-KX-04": "Khuất Xá",
+      "LS-CL-05": "Chi Lăng",
+      "LS-DH-06": "Điềm He",
+      "LS-TB-07": "Thái Bình",
+      "LS-NH-08": "Nhất Hòa"
+    };
+
+    const DEFAULT_SURVEY_CAPTURES = [
+      {
+        id: "WP-001",
+        site_id: "LS-QK-01",
+        latitude: 22.357778,
+        longitude: 106.524722,
+        accuracy_m: 5.0,
+        captured_at: "2026-11-11T09:00:00+07:00",
+        slope_info: "Cao độ SRTM 388m, dốc TB 8.5° (cực đại 18.6°)",
+        note: "Khu vực Tàng Chang, thôn Phi Mỹ (Quốc Khánh). Quy mô 1 điểm, 93 hộ dân (369 nhân khẩu). Đới tiếp xúc Hệ tầng Nà Quản / Sông Hiến và khối đá vôi, tiềm ẩn sạt lở kết hợp sụt lún karst.",
+        recommendation: "Nghiên cứu khu tái định cư tập trung tại thôn Long Thịnh (6,7 ha).",
+        observer: "Tác tử survey-logbook & Đoàn khảo sát",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-001-LOG-01",
+            timestamp: "2026-11-11T09:00:00+07:00",
+            author: "Tác tử survey-logbook",
+            category: "Khảo sát Địa kỹ thuật & Mái dốc",
+            content: "Khu vực Tàng Chang, thôn Phi Mỹ (Quốc Khánh). Quy mô 1 điểm, 93 hộ dân (369 nhân khẩu). Đới tiếp xúc Hệ tầng Nà Quản / Sông Hiến và khối đá vôi.",
+            recommendation: "Nghiên cứu khu tái định cư tập trung tại thôn Long Thịnh (6,7 ha)."
+          }
+        ]
+      },
+      {
+        id: "WP-002",
+        site_id: "LS-DD-02",
+        latitude: 21.950833,
+        longitude: 106.698056,
+        accuracy_m: 5.0,
+        captured_at: "2026-11-11T15:00:00+07:00",
+        slope_info: "Cao độ SRTM 295m, đứt gãy Cao Bằng – Tiên Yên",
+        note: "Các thôn Tam Lung, Nhất Tâm, Phú Lộc (Đồng Đăng). Quy mô 3 điểm, 56 hộ dân (195 nhân khẩu). Trầm tích lục nguyên – phun trào Trias Hệ tầng Khôn Làng (T2a kl).",
+        recommendation: "Đánh giá mức độ nguy hiểm, khuyến cáo người dân và tham mưu hỗ trợ kinh phí.",
+        observer: "Tác tử survey-logbook & Đoàn khảo sát",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-002-LOG-01",
+            timestamp: "2026-11-11T15:00:00+07:00",
+            author: "Tác tử survey-logbook",
+            category: "Khảo sát Địa kỹ thuật & Mái dốc",
+            content: "Các thôn Tam Lung, Nhất Tâm, Phú Lộc (Đồng Đăng). Quy mô 3 điểm, 56 hộ dân (195 nhân khẩu).",
+            recommendation: "Đánh giá mức độ nguy hiểm, khuyến cáo người dân."
+          }
+        ]
+      },
+      {
+        id: "WP-003",
+        site_id: "LS-KK-03",
+        latitude: 21.868333,
+        longitude: 106.645,
+        accuracy_m: 5.0,
+        captured_at: "2026-11-12T09:00:00+07:00",
+        slope_info: "Cao độ SRTM 263m, dốc TB 16.6° (cực đại 23.8°)",
+        note: "Thôn Khuổi Mạ (Khánh Khê). Quy mô 1 điểm, 21 hộ dân (92 nhân khẩu). Trầm tích lục nguyên xen cát bột kết, đá phiến sét Hệ tầng Khôn Làng.",
+        recommendation: "Bố trí vốn xây dựng khu tái định cư và hỗ trợ di dời.",
+        observer: "Tác tử survey-logbook & Đoàn khảo sát",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-003-LOG-01",
+            timestamp: "2026-11-12T09:00:00+07:00",
+            author: "Tác tử survey-logbook",
+            category: "Khảo sát Địa kỹ thuật & Mái dốc",
+            content: "Thôn Khuổi Mạ (Khánh Khê). Quy mô 1 điểm, 21 hộ dân (92 nhân khẩu). Địa hình phân cắt mạnh.",
+            recommendation: "Bố trí vốn xây dựng khu tái định cư và hỗ trợ di dời."
+          }
+        ]
+      },
+      {
+        id: "WP-004",
+        site_id: "LS-KX-04",
+        latitude: 21.7475,
+        longitude: 107.018333,
+        accuracy_m: 5.0,
+        captured_at: "2026-11-12T15:00:00+07:00",
+        slope_info: "Cao độ SRTM 230m, Hệ tầng Rinh Chùa (T2l rc)",
+        note: "Xóm Còn Chè, thôn Tam Gia (Khuất Xá). Quy mô 4 điểm, 25 hộ dân (11 hộ cũ và 14 hộ phát sinh). Đá phiến sét, bột kết phong hóa mạnh.",
+        recommendation: "Bố trí tái định cư, khoan khảo sát địa chất và đo vẽ ranh giới cung trượt.",
+        observer: "Tác tử survey-logbook & Đoàn khảo sát",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-004-LOG-01",
+            timestamp: "2026-11-12T15:00:00+07:00",
+            author: "Tác tử survey-logbook",
+            category: "Khảo sát Địa kỹ thuật & Mái dốc",
+            content: "Xóm Còn Chè, thôn Tam Gia (Khuất Xá). Quy mô 4 điểm, 25 hộ dân.",
+            recommendation: "Khoan khảo sát địa chất và đo vẽ ranh giới cung trượt."
+          }
+        ]
+      },
+      {
+        id: "WP-005",
+        site_id: "LS-CL-05",
+        latitude: 21.601389,
+        longitude: 106.534722,
+        accuracy_m: 5.0,
+        captured_at: "2026-11-13T10:00:00+07:00",
+        slope_info: "Cao độ SRTM 80m, vách đá vôi Bắc Sơn (C-P bs)",
+        note: "Thôn Hợp Tiến và thôn Hòa Bình 2 (Chi Lăng). Quy mô 2 điểm, 23 hộ dân. Đới tiếp xúc kiến tạo vách đá vôi Bắc Sơn và Hệ tầng Lạng Sơn; nguy cơ lở đá/đá lăn.",
+        recommendation: "Phá dỡ khối đá nguy cơ sạt lở và bố trí khu dân cư tập trung khẩn cấp.",
+        observer: "Tác tử survey-logbook & Đoàn khảo sát",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-005-LOG-01",
+            timestamp: "2026-11-13T10:00:00+07:00",
+            author: "Tác tử survey-logbook",
+            category: "Khảo sát Địa kỹ thuật & Mái dốc",
+            content: "Thôn Hợp Tiến và thôn Hòa Bình 2 (Chi Lăng). Nguy cơ cao lở đá, đá lăn.",
+            recommendation: "Phá dỡ khối đá nguy cơ sạt lở và bố trí khu dân cư tập trung."
+          }
+        ]
+      },
+      {
+        id: "WP-006",
+        site_id: "LS-DH-06",
+        latitude: null,
+        longitude: null,
+        accuracy_m: null,
+        captured_at: "2026-11-11T08:00:00+07:00",
+        slope_info: "Chưa đo (Sụt đất gây nứt nhà, nền, sân)",
+        note: "Xóm Phai Duống, thôn Phù Huê (Điềm He). Quy mô 1 điểm, 4 hộ dân (20 nhân khẩu). UBND tỉnh đã công bố tình huống khẩn cấp thiên tai. Chưa có tọa độ trong CV 6666 — lưu tại Vùng cách ly chờ đo GPS.",
+        recommendation: "Đo bổ sung tọa độ GPS WGS 84 thực địa và di dời khẩn cấp.",
+        observer: "Tác tử physical-quarantine",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-006-LOG-01",
+            timestamp: "2026-11-11T08:00:00+07:00",
+            author: "Tác tử physical-quarantine",
+            category: "Đo đạc GPS & Khống chế tọa độ",
+            content: "Xóm Phai Duống, thôn Phù Huê (Điềm He). Chưa có tọa độ WGS 84 trong CV 6666 — đưa vào Vùng cách ly chờ đo GPS.",
+            recommendation: "Đo bổ sung tọa độ GPS WGS 84 thực địa và sắp xếp dân cư ra khỏi vùng thiên tai."
+          }
+        ]
+      },
+      {
+        id: "WP-007",
+        site_id: "LS-TB-07",
+        latitude: null,
+        longitude: null,
+        accuracy_m: null,
+        captured_at: "2026-11-11T08:00:00+07:00",
+        slope_info: "Chưa đo (Tại thôn Hưng Thái đã xây kè 3 hộ)",
+        note: "Thôn Hưng Thái, Bản Chu (Thái Bình). Quy mô 2 điểm, 8 hộ dân (24 nhân khẩu). Chưa có tọa độ trong CV 6666 — lưu tại Vùng cách ly chờ đo GPS.",
+        recommendation: "Đo bổ sung tọa độ GPS WGS 84 và kiểm tra, đánh giá hiện trạng sụt trượt đất.",
+        observer: "Tác tử physical-quarantine",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-007-LOG-01",
+            timestamp: "2026-11-11T08:00:00+07:00",
+            author: "Tác tử physical-quarantine",
+            category: "Đo đạc GPS & Khống chế tọa độ",
+            content: "Thôn Hưng Thái, Bản Chu (Thái Bình). Chưa có tọa độ WGS 84 trong CV 6666 — đưa vào Vùng cách ly chờ đo GPS.",
+            recommendation: "Kiểm tra, đánh giá hiện trạng sụt, trượt đất."
+          }
+        ]
+      },
+      {
+        id: "WP-008",
+        site_id: "LS-NH-08",
+        latitude: null,
+        longitude: null,
+        accuracy_m: null,
+        captured_at: "2026-11-11T08:00:00+07:00",
+        slope_info: "Chưa đo (17 điểm giao thông & hộ dân có vết nứt)",
+        note: "Xã Nhất Hòa (26 điểm sạt lở, 12 hộ dân, 17 điểm giao thông). Chưa có tọa độ trong CV 6666 — lưu tại Vùng cách ly chờ đo GPS từng vị trí.",
+        recommendation: "Đo tọa độ GPS từng điểm và đánh giá mức độ nguy hiểm.",
+        observer: "Tác tử physical-quarantine",
+        storage: "local-only",
+        log_entries: [
+          {
+            entry_id: "WP-008-LOG-01",
+            timestamp: "2026-11-11T08:00:00+07:00",
+            author: "Tác tử physical-quarantine",
+            category: "Đo đạc GPS & Khống chế tọa độ",
+            content: "Xã Nhất Hòa (26 điểm sạt lở, 12 hộ dân). Chưa có tọa độ WGS 84 trong CV 6666 — đưa vào Vùng cách ly chờ đo GPS.",
+            recommendation: "Hướng dẫn, hỗ trợ đánh giá mức độ nguy hiểm tại khu vực hộ dân."
+          }
+        ]
+      }
+    ];
+
+    function toDmsSingle(val, isLat) {
+      if (val === null || val === undefined || !Number.isFinite(Number(val))) return "";
+      const hemi = isLat ? (val >= 0 ? "B" : "N") : (val >= 0 ? "Đ" : "T");
+      const absVal = Math.abs(Number(val));
+      let deg = Math.floor(absVal);
+      const minFull = (absVal - deg) * 60;
+      let min = Math.floor(minFull);
+      let sec = Math.round((minFull - min) * 60);
+      if (sec >= 60) { sec = 0; min += 1; }
+      if (min >= 60) { min = 0; deg += 1; }
+      return `${deg}°${String(min).padStart(2, "0")}'${String(sec).padStart(2, "0")}"${hemi}`;
     }
+
+    function formatDmsPair(lat, lon) {
+      if (lat === null || lon === null || !Number.isFinite(Number(lat)) || !Number.isFinite(Number(lon))) return "";
+      return `${toDmsSingle(lat, true)}, ${toDmsSingle(lon, false)}`;
+    }
+
+    function evaluateCapturePlausibility(capture) {
+      const lat = capture.latitude === null || capture.latitude === undefined || capture.latitude === "" ? null : Number(capture.latitude);
+      const lon = capture.longitude === null || capture.longitude === undefined || capture.longitude === "" ? null : Number(capture.longitude);
+      if (lat === null || lon === null) {
+        return { ok: false, reason: "Thiếu tọa độ WGS 84 — Lưu tại Vùng cách ly chờ đo GPS thực địa." };
+      }
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        return { ok: false, reason: "Tọa độ không phải số thực hợp lệ." };
+      }
+      if (lat < 21.0 || lat > 23.0 || lon < 105.5 || lon > 108.5) {
+        return { ok: false, reason: `Tọa độ (${lat.toFixed(6)}, ${lon.toFixed(6)}) nằm ngoài miền tỉnh Lạng Sơn [21..23°B, 105.5..108.5°Đ].` };
+      }
+      return { ok: true, reason: "Đạt kiểm định vật lý" };
+    }
+
+    function validCapture(capture) {
+      if (!capture || typeof capture.id !== "string" || typeof capture.site_id !== "string") return false;
+      const hasValidNullCoords = capture.latitude === null && capture.longitude === null;
+      const hasValidNumCoords = Number.isFinite(capture.latitude) && capture.latitude >= -90 && capture.latitude <= 90 &&
+        Number.isFinite(capture.longitude) && capture.longitude >= -180 && capture.longitude <= 180;
+      return (hasValidNullCoords || hasValidNumCoords) && typeof capture.captured_at === "string";
+    }
+
     function readLocationCaptures() {
-      const saved = JSON.parse(localStorage.getItem(locationStorageKey) || "[]");
+      const raw = localStorage.getItem(locationStorageKey);
+      if (!raw) {
+        localStorage.setItem(locationStorageKey, JSON.stringify(DEFAULT_SURVEY_CAPTURES));
+        return structuredClone(DEFAULT_SURVEY_CAPTURES);
+      }
+      const saved = JSON.parse(raw);
       if (!Array.isArray(saved) || !saved.every(validCapture)) {
         throw new Error("Dữ liệu tọa độ đã lưu không đúng định dạng; hãy xuất hoặc xử lý dữ liệu trước khi ghi thêm.");
       }
       return saved;
     }
+
     function renderLocationCapture(capture) {
-      const site = byId[capture.site_id];
+      if (capture.latitude === null || capture.longitude === null) return;
+      const communeName = siteNameMap[capture.site_id] || capture.site_id;
       const marker = L.circleMarker([capture.latitude, capture.longitude], {
         radius: 7, color: "#fff", weight: 2, fillColor: "#6b4bb8", fillOpacity: 1
       });
       const popup = document.createElement("div");
       const title = document.createElement("strong");
-      title.textContent = `GPS khảo sát · ${site.name} (${site.id})`;
+      title.textContent = `Điểm lưu tọa độ [${capture.id}] · ${communeName} (${capture.site_id})`;
       const details = document.createElement("div");
       details.textContent =
-        `${capture.latitude.toFixed(6)}, ${capture.longitude.toFixed(6)} · sai số ±${Math.round(capture.accuracy_m)} m`;
-      const time = document.createElement("div");
-      time.textContent = new Date(capture.captured_at).toLocaleString("vi-VN", {
-        timeZone: "Asia/Ho_Chi_Minh"
-      });
-      popup.append(title, details, time);
+        `${capture.latitude.toFixed(6)}°B, ${capture.longitude.toFixed(6)}°Đ (${formatDmsPair(capture.latitude, capture.longitude)})` +
+        (Number.isFinite(capture.accuracy_m) ? ` · ±${Math.round(capture.accuracy_m)} m` : "");
+      const noteLine = document.createElement("div");
+      noteLine.style.marginTop = "4px";
+      noteLine.textContent = `Ghi chú: ${capture.note || "Chưa có ghi chú"}`;
+      const btnNote = document.createElement("button");
+      btnNote.type = "button";
+      btnNote.className = "quiet-btn";
+      btnNote.style.marginTop = "6px";
+      btnNote.textContent = "📝 Tạo / Sửa ghi chú nhật ký";
+      btnNote.addEventListener("click", () => openCaptureNoteDialog(capture.id));
+      popup.append(title, details, noteLine, btnNote);
       marker.bindPopup(popup);
       capturedGroup.addLayer(marker);
     }
+
+    function escapeHtmlStr(s) {
+      const d = document.createElement("div");
+      d.textContent = s === null || s === undefined ? "" : String(s);
+      return d.innerHTML;
+    }
+
     function renderLocationCaptures() {
       const captures = readLocationCaptures();
       capturedGroup.clearLayers();
       captures.forEach(renderLocationCapture);
       clearLocationButton.disabled = captures.length === 0;
+      const withCoords = captures.filter(c => c.latitude !== null && c.longitude !== null).length;
+      const totalLogs = captures.reduce((acc, c) => acc + (Array.isArray(c.log_entries) ? c.log_entries.length : (c.note ? 1 : 0)), 0);
       document.getElementById("location-captures").textContent =
-        captures.length ? `Đã ghi nhận ${captures.length} tọa độ trên thiết bị này.` : "Chưa có tọa độ khảo sát được ghi nhận.";
+        captures.length
+          ? `Đang lưu ${captures.length} điểm định vị (${withCoords} điểm có tọa độ WGS 84, ${captures.length - withCoords} điểm cách ly chờ đo GPS) với tổng cộng ${totalLogs} mục nhật ký khảo sát.`
+          : "Chưa có tọa độ khảo sát được ghi nhận.";
+
+      const tbody = document.getElementById("captures-logbook-tbody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+      captures.forEach((c, idx) => {
+        const communeName = siteNameMap[c.site_id] || c.site_id;
+        const plaus = evaluateCapturePlausibility(c);
+        const dms = formatDmsPair(c.latitude, c.longitude);
+        const coordHtml = (c.latitude !== null && c.longitude !== null)
+          ? `<strong>${Number(c.latitude).toFixed(6)}°B, ${Number(c.longitude).toFixed(6)}°Đ</strong><br><span style="color:var(--muted)">${escapeHtmlStr(dms)}</span>`
+          : `<span style="color:#a33427;font-weight:700">Chưa có tọa độ (Cách ly)</span>`;
+        const timeStr = c.captured_at ? new Date(c.captured_at).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }) : "—";
+        const accStr = Number.isFinite(c.accuracy_m) ? `±${Math.round(c.accuracy_m)} m` : "Chưa đo";
+        const entries = Array.isArray(c.log_entries) && c.log_entries.length > 0
+          ? c.log_entries
+          : (c.note ? [{ entry_id: `${c.id}-LOG-01`, timestamp: c.captured_at, author: c.observer || "Thực địa", category: "Khảo sát", content: c.note, recommendation: c.recommendation || "" }] : []);
+        const logsHtml = entries.map((e, ei) =>
+          `<div style="margin-bottom:3px"><strong>[${escapeHtmlStr(e.entry_id || ("NK-" + (ei + 1)))}]</strong> (${escapeHtmlStr(e.category || "Khảo sát")}): ${escapeHtmlStr(e.content || "")}${e.recommendation ? `<br><em style="color:#174d43">→ Kiến nghị: ${escapeHtmlStr(e.recommendation)}</em>` : ""}</div>`
+        ).join("") || `<span style="color:var(--muted)">Chưa có ghi chú nhật ký</span>`;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${escapeHtmlStr(c.id.length > 10 ? ("GPS-" + String(idx + 1).padStart(2, "0")) : c.id)}</strong><br><span style="color:var(--muted)">${escapeHtmlStr(c.site_id)} · ${escapeHtmlStr(communeName)}</span></td>
+          <td style="font-family:ui-monospace,Consolas,monospace">${coordHtml}${c.slope_info ? `<br><small style="color:#23453b">${escapeHtmlStr(c.slope_info)}</small>` : ""}</td>
+          <td>Sai số: ${escapeHtmlStr(accStr)}<br><span style="color:var(--muted)">${escapeHtmlStr(timeStr)}</span></td>
+          <td>${logsHtml}</td>
+          <td>${plaus.ok ? `<span style="color:#155c49;font-weight:700">✅ Đạt vật lý</span>` : `<span style="color:#a33427;font-weight:700">⚠️ ${escapeHtmlStr(plaus.reason)}</span>`}</td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button type="button" class="quiet-btn" data-edit-cap="${escapeHtmlStr(c.id)}" style="font-weight:700;border-color:#174d43;color:#174d43">📝 Ghi chú Nhật ký (${entries.length})</button>
+              ${c.latitude !== null && c.longitude !== null ? `<button type="button" class="quiet-btn" data-pan-cap="${escapeHtmlStr(c.id)}">🔍 Phóng tới</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("[data-edit-cap]").forEach(btn => {
+        btn.addEventListener("click", () => openCaptureNoteDialog(btn.getAttribute("data-edit-cap")));
+      });
+      tbody.querySelectorAll("[data-pan-cap]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const cap = readLocationCaptures().find(x => x.id === btn.getAttribute("data-pan-cap"));
+          if (cap && cap.latitude !== null && cap.longitude !== null) {
+            map.flyTo([cap.latitude, cap.longitude], Math.max(map.getZoom(), 14), { duration: 0.5 });
+          }
+        });
+      });
     }
     function describeLocationError(error) {
       if (error.code === 1) return "Bạn chưa cấp quyền vị trí. Hãy cho phép trong cài đặt trình duyệt để tiếp tục.";
@@ -801,36 +1275,328 @@
       saveLocationButton.disabled = latestPosition === null;
       if (latestPosition) locationStatus.textContent += " · Đã dừng theo dõi.";
     });
+    const captureDialog = document.getElementById("capture-note-dialog");
+    if (captureDialog && !("closedBy" in HTMLDialogElement.prototype)) {
+      captureDialog.addEventListener("click", (e) => {
+        if (e.target === captureDialog && captureDialog.getAttribute("closedby") === "any") {
+          captureDialog.close();
+        }
+      });
+    }
+
+    function openCaptureNoteDialog(capId) {
+      if (!captureDialog) return;
+      const captures = readLocationCaptures();
+      const existing = captures.find(c => c.id === capId);
+      if (existing) {
+        document.getElementById("cap-dlg-id").value = existing.id;
+        document.getElementById("cap-dlg-site").value = existing.site_id || select.value || "LS-QK-01";
+        document.getElementById("cap-dlg-lat").value = existing.latitude !== null && existing.latitude !== undefined ? String(existing.latitude) : "";
+        document.getElementById("cap-dlg-lon").value = existing.longitude !== null && existing.longitude !== undefined ? String(existing.longitude) : "";
+        document.getElementById("cap-dlg-acc").value = existing.accuracy_m !== null && existing.accuracy_m !== undefined ? String(existing.accuracy_m) : "";
+        document.getElementById("cap-dlg-slope").value = existing.slope_info || "";
+        document.getElementById("cap-dlg-note").value = "";
+        document.getElementById("cap-dlg-rec").value = existing.recommendation || "";
+      } else {
+        const center = map.getCenter();
+        document.getElementById("cap-dlg-id").value = `WP-${String(captures.length + 1).padStart(3, "0")}`;
+        document.getElementById("cap-dlg-site").value = select.value || "LS-QK-01";
+        document.getElementById("cap-dlg-lat").value = latestPosition ? latestPosition.latitude.toFixed(6) : center.lat.toFixed(6);
+        document.getElementById("cap-dlg-lon").value = latestPosition ? latestPosition.longitude.toFixed(6) : center.lng.toFixed(6);
+        document.getElementById("cap-dlg-acc").value = latestPosition ? String(Math.round(latestPosition.accuracy)) : "5.0";
+        document.getElementById("cap-dlg-slope").value = "";
+        document.getElementById("cap-dlg-note").value = "";
+        document.getElementById("cap-dlg-rec").value = "";
+      }
+      captureDialog.showModal();
+      document.getElementById("cap-dlg-note").focus();
+    }
+
+    document.getElementById("close-capture-dlg").addEventListener("click", () => captureDialog.close());
+    document.getElementById("cancel-capture-dlg").addEventListener("click", () => captureDialog.close());
+    document.getElementById("save-map-center-location").addEventListener("click", () => openCaptureNoteDialog(null));
+
+    document.getElementById("seed-project-waypoints").addEventListener("click", () => {
+      try {
+        const captures = readLocationCaptures();
+        const existingIds = new Set(captures.map(c => c.id));
+        DEFAULT_SURVEY_CAPTURES.forEach(def => {
+          if (!existingIds.has(def.id)) captures.push(structuredClone(def));
+        });
+        localStorage.setItem(locationStorageKey, JSON.stringify(captures));
+        renderLocationCaptures();
+        locationStatus.textContent = "Đã nạp đầy đủ 8 điểm mốc khảo sát CV 6666 vào Bảng tọa độ lưu & Nhật ký khảo sát.";
+      } catch (error) {
+        locationStatus.textContent = `Không nạp được điểm mốc: ${error.message}`;
+      }
+    });
+
+    document.getElementById("capture-note-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      try {
+        const captures = readLocationCaptures();
+        const capId = document.getElementById("cap-dlg-id").value.trim() || `WP-${String(captures.length + 1).padStart(3, "0")}`;
+        const siteId = document.getElementById("cap-dlg-site").value;
+        const latRaw = document.getElementById("cap-dlg-lat").value.trim().replace(",", ".");
+        const lonRaw = document.getElementById("cap-dlg-lon").value.trim().replace(",", ".");
+        const accRaw = document.getElementById("cap-dlg-acc").value.trim().replace(",", ".");
+        const lat = latRaw === "" ? null : Number(latRaw);
+        const lon = lonRaw === "" ? null : Number(lonRaw);
+        const acc = accRaw === "" ? 5.0 : Number(accRaw);
+        const slopeInfo = document.getElementById("cap-dlg-slope").value.trim();
+        const noteText = document.getElementById("cap-dlg-note").value.trim();
+        const recText = document.getElementById("cap-dlg-rec").value.trim();
+        const author = document.getElementById("cap-dlg-author").value.trim() || "Tổ Khảo sát Địa kỹ thuật";
+        const category = document.getElementById("cap-dlg-category").value;
+        const nowIso = new Date().toISOString();
+
+        let target = captures.find(c => c.id === capId);
+        if (!target) {
+          target = {
+            id: capId,
+            site_id: siteId,
+            latitude: Number.isFinite(lat) ? lat : null,
+            longitude: Number.isFinite(lon) ? lon : null,
+            accuracy_m: Number.isFinite(acc) ? acc : 5.0,
+            captured_at: nowIso,
+            slope_info: slopeInfo,
+            note: noteText,
+            recommendation: recText,
+            observer: author,
+            storage: "local-only",
+            log_entries: []
+          };
+          captures.push(target);
+        } else {
+          target.site_id = siteId;
+          if (lat !== null && Number.isFinite(lat)) target.latitude = lat;
+          if (lon !== null && Number.isFinite(lon)) target.longitude = lon;
+          if (Number.isFinite(acc)) target.accuracy_m = acc;
+          if (slopeInfo) target.slope_info = slopeInfo;
+          if (recText) target.recommendation = recText;
+          target.observer = author;
+          target.note = target.note ? `${target.note} | ${noteText}` : noteText;
+        }
+        if (!Array.isArray(target.log_entries)) target.log_entries = [];
+        const entrySeq = target.log_entries.length + 1;
+        target.log_entries.push({
+          entry_id: `${target.id}-LOG-${String(entrySeq).padStart(2, "0")}`,
+          timestamp: nowIso,
+          author,
+          category,
+          content: noteText,
+          recommendation: recText
+        });
+
+        localStorage.setItem(locationStorageKey, JSON.stringify(captures));
+        renderLocationCaptures();
+        captureDialog.close();
+        locationStatus.textContent = `Đã lưu điểm tọa độ [${target.id}] (${siteNameMap[siteId] || siteId}) và bổ sung mục nhật ký thứ ${entrySeq}.`;
+      } catch (error) {
+        locationStatus.textContent = `Không lưu được ghi chú tọa độ: ${error.message}`;
+      }
+    });
+
     saveLocationButton.addEventListener("click", () => {
       if (!latestPosition) return;
       try {
         const captures = readLocationCaptures();
+        const newId = `GPS-${String(captures.length + 1).padStart(2, "0")}`;
+        const nowIso = new Date(latestPosition.timestamp).toISOString();
         const capture = {
-          id: crypto.randomUUID(),
+          id: newId,
           site_id: select.value,
           latitude: latestPosition.latitude,
           longitude: latestPosition.longitude,
           accuracy_m: latestPosition.accuracy,
-          captured_at: new Date(latestPosition.timestamp).toISOString(),
-          storage: "local-only"
+          captured_at: nowIso,
+          slope_info: "Đo trực tiếp từ GPS thiết bị",
+          note: `Ghi nhận tọa độ GPS thực địa tại ${byId[select.value]?.name || select.value}.`,
+          recommendation: "Bổ sung quan sát vết nứt và hình học mái dốc.",
+          observer: "Tổ Khảo sát Hiện trường",
+          storage: "local-only",
+          log_entries: [
+            {
+              entry_id: `${newId}-LOG-01`,
+              timestamp: nowIso,
+              author: "GPS Thiết bị",
+              category: "Đo đạc GPS & Khống chế tọa độ",
+              content: `Ghi nhận tọa độ GPS thực địa tại ${byId[select.value]?.name || select.value} (${latestPosition.latitude.toFixed(6)}°B, ${latestPosition.longitude.toFixed(6)}°Đ).`,
+              recommendation: "Bổ sung mô tả địa chất và hình học mái dốc."
+            }
+          ]
         };
         captures.push(capture);
         localStorage.setItem(locationStorageKey, JSON.stringify(captures));
         renderLocationCaptures();
         locationStatus.textContent =
-          `Đã ghi nhận GPS cho ${byId[capture.site_id].name} · ${capture.latitude.toFixed(6)}, ` +
-          `${capture.longitude.toFixed(6)} · sai số ±${Math.round(capture.accuracy_m)} m. ` +
-          "Tọa độ được lưu cục bộ; không thay tọa độ tham khảo trong hồ sơ.";
+          `Đã ghi nhận GPS [${newId}] cho ${byId[capture.site_id].name} · ${capture.latitude.toFixed(6)}, ` +
+          `${capture.longitude.toFixed(6)} · sai số ±${Math.round(capture.accuracy_m)} m. Nhấn '📝 Ghi chú Nhật ký' trên bảng để nhập chi tiết hiện trường.`;
+        openCaptureNoteDialog(newId);
       } catch (error) {
         locationStatus.textContent = `Không lưu được tọa độ khảo sát: ${error.message}`;
       }
     });
+
+    // Bộ đóng gói ZIP OOXML (.xlsx / .docx) trực tiếp trên trình duyệt cho Bảng tọa độ lưu & Nhật ký khảo sát
+    const CRC32_TBL = (() => {
+      const t = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        t[i] = c >>> 0;
+      }
+      return t;
+    })();
+    function calcCrc32(bytes) {
+      let crc = 0xFFFFFFFF;
+      for (let i = 0; i < bytes.length; i++) crc = CRC32_TBL[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+      return (crc ^ 0xFFFFFFFF) >>> 0;
+    }
+    function buildOoxmlZip(files) {
+      const enc = new TextEncoder();
+      const locals = [];
+      const centrals = [];
+      let offset = 0;
+      for (const f of files) {
+        const nb = enc.encode(f.name);
+        const db = enc.encode(f.content);
+        const crc = calcCrc32(db);
+        const lh = new Uint8Array(30 + nb.length);
+        const lv = new DataView(lh.buffer);
+        lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0x0800, true);
+        lv.setUint32(14, crc, true); lv.setUint32(18, db.length, true); lv.setUint32(22, db.length, true);
+        lv.setUint16(26, nb.length, true); lh.set(nb, 30);
+        const ch = new Uint8Array(46 + nb.length);
+        const cv = new DataView(ch.buffer);
+        cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+        cv.setUint16(8, 0x0800, true); cv.setUint32(16, crc, true); cv.setUint32(20, db.length, true);
+        cv.setUint32(24, db.length, true); cv.setUint16(28, nb.length, true); cv.setUint32(42, offset, true);
+        ch.set(nb, 46);
+        locals.push(lh, db); centrals.push(ch); offset += lh.length + db.length;
+      }
+      const cSize = centrals.reduce((a, b) => a + b.length, 0);
+      const eocd = new Uint8Array(22);
+      const ev = new DataView(eocd.buffer);
+      ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, files.length, true);
+      ev.setUint16(10, files.length, true); ev.setUint32(12, cSize, true); ev.setUint32(16, offset, true);
+      return new Blob([...locals, ...centrals, eocd], { type: "application/octet-stream" });
+    }
+    const xmlEsc = v => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    function buildSheetXml(rows) {
+      const colName = idx => {
+        let s = "", n = idx;
+        while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - m) / 26); }
+        return s;
+      };
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>` +
+        rows.map((r, ri) => `<row r="${ri + 1}">` + r.map((v, ci) => {
+          const ref = `${colName(ci + 1)}${ri + 1}`;
+          if (v === null || v === undefined || v === "") return `<c r="${ref}"/>`;
+          if (typeof v === "number" && Number.isFinite(v)) return `<c r="${ref}" t="n"><v>${v}</v></c>`;
+          return `<c r="${ref}" t="inlineStr"><is><t>${xmlEsc(v)}</t></is></c>`;
+        }).join("") + `</row>`).join("") + `</sheetData></worksheet>`;
+    }
+
+    document.getElementById("export-locations-xlsx").addEventListener("click", () => {
+      try {
+        const captures = readLocationCaptures();
+        const sheet1 = [[
+          "Mã Điểm Lưu", "Mã Khu Vực", "Xã / Địa bàn", "Vĩ độ WGS84 (°B)", "Kinh độ WGS84 (°Đ)",
+          "Tọa độ DMS", "Sai số GPS (±m)", "Thời điểm lưu", "Thông số mái dốc / Địa chất",
+          "Ghi chú Nhật ký Tổng hợp", "Kiến nghị Xử lý", "Số mục Nhật ký", "Kiểm định Vật lý"
+        ]];
+        const sheet2 = [[
+          "Mã Mục Nhật ký", "Mã Điểm Lưu", "Mã Khu Vực", "Xã / Địa bàn",
+          "Vĩ độ WGS84 (°B)", "Kinh độ WGS84 (°Đ)", "Tọa độ DMS",
+          "Thời điểm ghi", "Người ghi", "Hạng mục khảo sát", "Nội dung Ghi chú Nhật ký Khảo sát", "Kiến nghị xử lý"
+        ]];
+        captures.forEach(c => {
+          const commune = siteNameMap[c.site_id] || c.site_id;
+          const dms = formatDmsPair(c.latitude, c.longitude);
+          const plaus = evaluateCapturePlausibility(c);
+          const entries = Array.isArray(c.log_entries) && c.log_entries.length > 0
+            ? c.log_entries
+            : [{ entry_id: `${c.id}-LOG-01`, timestamp: c.captured_at, author: c.observer || "Thực địa", category: "Khảo sát", content: c.note || "", recommendation: c.recommendation || "" }];
+          sheet1.push([
+            c.id, c.site_id, commune, c.latitude, c.longitude, dms, c.accuracy_m, c.captured_at,
+            c.slope_info || "", c.note || "", c.recommendation || "", entries.length,
+            plaus.ok ? "Hợp lệ vật lý (Đạt)" : `CÁCH LY: ${plaus.reason}`
+          ]);
+          entries.forEach(e => {
+            sheet2.push([
+              e.entry_id || "", c.id, c.site_id, commune, c.latitude, c.longitude, dms,
+              e.timestamp || c.captured_at, e.author || "", e.category || "", e.content || "", e.recommendation || c.recommendation || ""
+            ]);
+          });
+        });
+        const blob = buildOoxmlZip([
+          { name: "[Content_Types].xml", content: `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>` },
+          { name: "_rels/.rels", content: `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` },
+          { name: "xl/workbook.xml", content: `<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="BangToaDo_DiemLuu" sheetId="1" r:id="rId1"/><sheet name="NhatKyKhaoSat_ChiTiet" sheetId="2" r:id="rId2"/></sheets></workbook>` },
+          { name: "xl/_rels/workbook.xml.rels", content: `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/></Relationships>` },
+          { name: "xl/worksheets/sheet1.xml", content: buildSheetXml(sheet1) },
+          { name: "xl/worksheets/sheet2.xml", content: buildSheetXml(sheet2) }
+        ]);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "NhatKyKhaoSat_BangToaDo_LangSon.xlsx";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (error) {
+        locationStatus.textContent = `Không xuất được file Excel: ${error.message}`;
+      }
+    });
+
+    document.getElementById("export-locations-docx").addEventListener("click", () => {
+      try {
+        const captures = readLocationCaptures();
+        const wP = (t, b = false, sz = 22) => `<w:p><w:r><w:rPr>${b ? "<w:b/>" : ""}<w:sz w:val="${sz}"/></w:rPr><w:t xml:space="preserve">${xmlEsc(t)}</w:t></w:r></w:p>`;
+        const wCell = (t, b = false) => `<w:tc><w:tcPr><w:tcW w:w="2200" w:type="dxa"/></w:tcPr>${wP(t, b, 19)}</w:tc>`;
+        let tblRows = `<w:tr>${wCell("Mã Điểm / Site", true)}${wCell("Xã / Địa bàn", true)}${wCell("Tọa độ Lưu WGS 84 & DMS", true)}${wCell("Ghi chú Nhật ký & Kiến nghị", true)}${wCell("Kiểm định Vật lý", true)}</w:tr>`;
+        captures.forEach(c => {
+          const commune = siteNameMap[c.site_id] || c.site_id;
+          const dms = formatDmsPair(c.latitude, c.longitude);
+          const coordStr = (c.latitude !== null && c.longitude !== null) ? `${c.latitude.toFixed(6)}°B, ${c.longitude.toFixed(6)}°Đ (${dms})` : "Chưa có tọa độ (Cách ly)";
+          const plaus = evaluateCapturePlausibility(c);
+          tblRows += `<w:tr>${wCell(`${c.id} (${c.site_id})`)}${wCell(commune)}${wCell(coordStr)}${wCell(`${c.note || ""} ${c.recommendation ? "-> Kiến nghị: " + c.recommendation : ""}`)}${wCell(plaus.ok ? "Đạt vật lý" : plaus.reason)}</w:tr>`;
+        });
+        const detailsXml = captures.map((c, idx) => {
+          const commune = siteNameMap[c.site_id] || c.site_id;
+          const dms = formatDmsPair(c.latitude, c.longitude);
+          const coordStr = (c.latitude !== null && c.longitude !== null) ? `${c.latitude.toFixed(6)}°B, ${c.longitude.toFixed(6)}°Đ (${dms})` : "Chưa có tọa độ (Cách ly)";
+          const entries = Array.isArray(c.log_entries) && c.log_entries.length > 0 ? c.log_entries : [];
+          return [
+            wP(`${idx + 1}. Điểm lưu tọa độ [${c.id} | ${c.site_id}] — Xã ${commune}`, true, 23),
+            wP(`   • Tọa độ WGS 84: ${coordStr} | Sai số GPS: ${c.accuracy_m ?? "Chưa đo"} m`),
+            wP(`   • Thông số mái dốc / Địa chất: ${c.slope_info || "—"}`),
+            wP(`   • Ghi chú tổng hợp: ${c.note || "—"}`),
+            wP(`   • Kiến nghị kỹ thuật: ${c.recommendation || "—"}`),
+            ...entries.map((e, ei) => wP(`   [Nhật ký ${ei + 1} - ${e.entry_id || "LOG"}] (${e.timestamp || ""} | ${e.author || ""} | ${e.category || ""}): ${e.content || ""} ${e.recommendation ? "=> " + e.recommendation : ""}`))
+          ].join("");
+        }).join("");
+        const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${wP("SỔ NHẬT KÝ KHẢO SÁT ĐỊA KỸ THUẬT & BẢNG TỌA ĐỘ LƯU (LẠNG SƠN)", true, 28)}${wP(`Thời điểm xuất: ${new Date().toLocaleString("vi-VN")} | Hệ tọa độ: WGS 84 (EPSG:4326)`, false, 20)}${wP("I. Bảng Tọa độ Lưu (Master Coordinate Table)", true, 24)}<w:tbl><w:tblPr><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="64748B"/><w:left w:val="single" w:sz="4" w:space="0" w:color="64748B"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="64748B"/><w:right w:val="single" w:sz="4" w:space="0" w:color="64748B"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/></w:tblBorders></w:tblPr>${tblRows}</w:tbl>${wP("II. Nhật ký Khảo sát Chi tiết Từng Điểm Lưu Tọa độ", true, 24)}${detailsXml}</w:body></w:document>`;
+        const blob = buildOoxmlZip([
+          { name: "[Content_Types].xml", content: `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>` },
+          { name: "_rels/.rels", content: `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>` },
+          { name: "word/document.xml", content: docXml }
+        ]);
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "NhatKyKhaoSat_BangToaDo_LangSon.docx";
+        link.click();
+        URL.revokeObjectURL(link.href);
+      } catch (error) {
+        locationStatus.textContent = `Không xuất được file Word: ${error.message}`;
+      }
+    });
+
     document.getElementById("export-locations").addEventListener("click", () => {
       try {
         const captures = readLocationCaptures();
         const blob = new Blob([JSON.stringify({
           exportedAt: new Date().toISOString(),
-          source: "Khảo sát sạt lở Lạng Sơn — tọa độ GPS do người dùng xác nhận",
+          source: "Khảo sát sạt lở Lạng Sơn — Bảng tọa độ lưu & Nhật ký khảo sát (survey-logbook)",
           storage: "local-only until manually exported",
           captures
         }, null, 2)], { type: "application/json;charset=utf-8" });
@@ -846,9 +1612,9 @@
     clearLocationButton.addEventListener("click", () => {
       if (!window.confirm("Xóa toàn bộ tọa độ khảo sát đã lưu trên trình duyệt này? Không thể hoàn tác nếu chưa xuất dữ liệu.")) return;
       try {
-        localStorage.removeItem(locationStorageKey);
+        localStorage.setItem(locationStorageKey, JSON.stringify([]));
         renderLocationCaptures();
-        locationStatus.textContent = "Đã xóa các tọa độ khảo sát đã lưu trên thiết bị này.";
+        locationStatus.textContent = "Đã xóa các tọa độ khảo sát đã lưu trên thiết bị này (bấm '📥 Nạp 8 điểm mốc CV 6666' để khôi phục danh mục gốc).";
       } catch (error) {
         locationStatus.textContent = `Không xóa được tọa độ khảo sát: ${error.message}`;
       }

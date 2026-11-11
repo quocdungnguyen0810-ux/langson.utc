@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hệ thống tác tử khảo sát & cảnh báo sạt lở Lạng Sơn</title>
+<style>
+:root{--ink:#14213d;--muted:#5f6b7a;--paper:#f6f8fb;--line:#dbe3ec;--navy:#16324f;--cyan:#0ea5a8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
+header{background:linear-gradient(120deg,#102a43,#1b4965);color:#fff;padding:30px max(24px,calc((100vw - 1420px)/2))}
+header h1{margin:0 0 6px;font-size:28px}
+header p{margin:0;color:#d9e7f2}
+main{max-width:1420px;margin:auto;padding:24px}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-top:-44px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px;box-shadow:0 8px 24px #102a4310}
+.kpi b{display:block;font-size:24px;color:#16324f}
+.kpi span{color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:1.08fr .92fr;gap:18px;margin-top:18px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+h2{font-size:19px;margin:0 0 12px;color:#102a43}
+.map{width:100%;height:auto;background:#eef5f3;border-radius:10px;border:1px solid var(--line)}
+.map-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.btn-toggle{background:#eef4f8;border:1px solid #cbd5e1;color:#16324f;padding:6px 11px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn-toggle.active{background:#16324f;color:#fff;border-color:#16324f}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:10px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}
+.cards{display:grid;gap:12px;max-height:1150px;overflow-y:auto;padding-right:4px}
+.site-card{border:1px solid var(--line);border-left:5px solid #1b4965;border-radius:10px;padding:15px;background:#fff;transition:box-shadow .2s,border-color .2s}
+.site-card.highlight{border-color:#0284c7;box-shadow:0 0 0 3px #bae6fd}
+.site-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.site-heading h3{display:inline;margin:0 0 0 8px}
+.site-id{font:12px ui-monospace,monospace;background:#e8eef5;padding:3px 6px;border-radius:5px;font-weight:700}
+.status{color:#fff;padding:4px 8px;border-radius:999px;font-weight:700;font-size:11px;white-space:nowrap;display:inline-block}
+.site-card p{margin:7px 0;color:var(--muted);font-size:13.5px}
+.metrics{display:flex;gap:6px;flex-wrap:wrap}
+.metrics span{background:#eef4f8;padding:4px 8px;border-radius:6px;font-weight:650;font-size:12.5px}
+dl{display:grid;grid-template-columns:142px 1fr;margin:8px 0;font-size:13px}
+dt,dd{padding:2.5px 0;border-bottom:1px dotted #f1f5f9}
+dt{color:var(--muted)}
+dd{margin:0;font-weight:600}
+.reason{border-top:1px dashed var(--line);padding-top:8px;color:#0f172a!important;font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#eef4f8;color:#16324f}
+.notice{border-left:5px solid #b45309;background:#fffbeb;padding:13px;border-radius:8px;margin-top:14px;font-size:13.5px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.gallery figure{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f8fafc}
+.gallery img{display:block;width:100%;height:210px;object-fit:contain;background:#0f172a}
+.gallery figcaption{padding:10px;color:var(--muted);font-size:12px}
+footer{max-width:1420px;margin:0 auto 30px;padding:0 24px;color:var(--muted);font-size:12px}
+dialog:modal{overscroll-behavior:contain}
+dialog::backdrop{background-color:rgba(15,23,42,0.55);backdrop-filter:blur(2px);overflow:hidden;overscroll-behavior:contain}
+@media(max-width:960px){.summary{grid-template-columns:1fr 1fr;margin-top:0}.layout{grid-template-columns:1fr}.cards{max-height:none}}
+</style>
+</head><body>
+<header>
+  <h1>Hệ thống tác tử khảo sát sạt lở Lạng Sơn</h1>
+  <p>Cập nhật 2026-11-11T10:26:32+07:00 · Thời tiết: offline-cache · Mưa lịch sử: offline-cache · Địa hình: offline-cache · Phiên bản 0.5.0</p>
+</header>
+<main>
+<section class="summary">
+  <div class="kpi"><b>5 + 3</b><span>5 xã có tọa độ & 3 xã bổ sung (40 điểm CV 6666)</span></div>
+  <div class="kpi"><b>218 / 242</b><span>hộ canonical 5 xã / tổng 8 xã</span></div>
+  <div class="kpi"><b>736 / 780</b><span>nhân khẩu đã biết / tổng CV 6666</span></div>
+  <div class="kpi"><b>9</b><span>bản ghi trong Vùng cách ly (Quarantine)</span></div>
+  <div class="kpi"><b>0/5</b><span>quan trắc thực địa đã xác minh</span></div>
+  <div class="kpi"><b>10–13/11</b><span>lịch trình khảo sát bước 1 (8 chuyên gia)</span></div>
+</section>
+
+<section class="layout">
+  <div class="panel">
+    <h2>Phân bố điểm khảo sát & Bản đồ Địa chất khống chế tọa độ (WGS 84)</h2>
+    <div class="map-controls">
+      <button type="button" class="btn-toggle active" onclick="toggleLayer('layer-geology-img', this)">Lớp Bản đồ Địa chất (DiaChat_LangSon.jpg)</button>
+      <button type="button" class="btn-toggle active" onclick="toggleLayer('layer-route', this)">Tuyến hành trình (1→5)</button>
+      <button type="button" class="btn-toggle active" onclick="toggleLayer('layer-graticule', this)">Lưới kinh–vĩ độ WGS 84</button>
+    </div>
+    <svg id="langson-map-svg" class="map" viewBox="120 60 2100 2140" role="img" aria-label="Sơ đồ năm điểm khảo sát trên nền địa chất WGS 84"><rect x="120" y="60" width="2100" height="2140" fill="#eef5f3"/><image id="layer-geology-img" href="DiaChat_LangSon.jpg" x="0" y="0" width="2417" height="3049" opacity="0.86" preserveAspectRatio="none"/><g id="layer-graticule" opacity="0.85"><line x1="212.0" y1="60" x2="212.0" y2="2200" stroke="#1e293b" stroke-width="2" stroke-dasharray="10,8" opacity="0.45"/><rect x="154.0" y="72" width="116" height="34" rx="6" fill="#0f172a" opacity="0.82"/><text x="212.0" y="95" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">106.0°E</text><line x1="937.5" y1="60" x2="937.5" y2="2200" stroke="#1e293b" stroke-width="2" stroke-dasharray="10,8" opacity="0.45"/><rect x="879.5" y="72" width="116" height="34" rx="6" fill="#0f172a" opacity="0.82"/><text x="937.5" y="95" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">106.5°E</text><line x1="1663.0" y1="60" x2="1663.0" y2="2200" stroke="#1e293b" stroke-width="2" stroke-dasharray="10,8" opacity="0.45"/><rect x="1605.0" y="72" width="116" height="34" rx="6" fill="#0f172a" opacity="0.82"/><text x="1663.0" y="95" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">107.0°E</text><line x1="120" y1="117.0" x2="2220" y2="117.0" stroke="#1e293b" stroke-width="2" stroke-dasharray="10,8" opacity="0.45"/><rect x="132" y="99.0" width="116" height="34" rx="6" fill="#0f172a" opacity="0.82"/><text x="190" y="122.0" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">22.5°N</text><line x1="120" y1="843.0" x2="2220" y2="843.0" stroke="#1e293b" stroke-width="2" stroke-dasharray="10,8" opacity="0.45"/><rect x="132" y="825.0" width="116" height="34" rx="6" fill="#0f172a" opacity="0.82"/><text x="190" y="848.0" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">22.0°N</text><line x1="120" y1="1569.0" x2="2220" y2="1569.0" stroke="#1e293b" stroke-width="2" stroke-dasharray="10,8" opacity="0.45"/><rect x="132" y="1551.0" width="116" height="34" rx="6" fill="#0f172a" opacity="0.82"/><text x="190" y="1574.0" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">21.5°N</text></g><g id="layer-route"><polyline points="973.4,323.5 1224.9,914.4 1147.9,1034.2 1689.6,1209.6 987.9,1421.8" fill="none" stroke="#0f172a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/><polyline points="973.4,323.5 1224.9,914.4 1147.9,1034.2 1689.6,1209.6 987.9,1421.8" fill="none" stroke="#38bdf8" stroke-width="5" stroke-dasharray="16,10" stroke-linecap="round" stroke-linejoin="round"/></g><g class="map-site-node" style="cursor:pointer" onclick="selectSiteCard('LS-QK-01')"><line x1="973.4" y1="323.5" x2="1022.3" y2="292.3" stroke="#0f172a" stroke-width="5"/><circle cx="1022.3" cy="292.3" r="6" fill="#0f172a"/><circle cx="973.4" cy="323.5" r="36" fill="#15803d" opacity="0.25"/><circle cx="973.4" cy="323.5" r="24" fill="#15803d" stroke="#ffffff" stroke-width="6"/><text x="973.4" y="331.5" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">1</text><rect x="1009.4" y="289.5" width="235" height="64" rx="10" fill="#0f172a" opacity="0.88" stroke="#ffffff" stroke-width="2"/><text x="1021.4" y="315.5" font-size="22" font-weight="700" fill="#ffffff">Quốc Khánh</text><text x="1021.4" y="339.5" font-size="17" font-weight="600" fill="#bae6fd">LS-QK-01 · Điểm 59.9</text></g><g class="map-site-node" style="cursor:pointer" onclick="selectSiteCard('LS-DD-02')"><line x1="1224.9" y1="914.4" x2="1269.4" y2="951.5" stroke="#0f172a" stroke-width="5"/><circle cx="1269.4" cy="951.5" r="6" fill="#0f172a"/><circle cx="1224.9" cy="914.4" r="36" fill="#15803d" opacity="0.25"/><circle cx="1224.9" cy="914.4" r="24" fill="#15803d" stroke="#ffffff" stroke-width="6"/><text x="1224.9" y="922.4" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">2</text><rect x="1260.9" y="880.4" width="235" height="64" rx="10" fill="#0f172a" opacity="0.88" stroke="#ffffff" stroke-width="2"/><text x="1272.9" y="906.4" font-size="22" font-weight="700" fill="#ffffff">Đồng Đăng</text><text x="1272.9" y="930.4" font-size="17" font-weight="600" fill="#bae6fd">LS-DD-02 · Điểm 53.7</text></g><g class="map-site-node" style="cursor:pointer" onclick="selectSiteCard('LS-KK-03')"><line x1="1147.9" y1="1034.2" x2="1130.1" y2="979.0" stroke="#0f172a" stroke-width="5"/><circle cx="1130.1" cy="979.0" r="6" fill="#0f172a"/><circle cx="1147.9" cy="1034.2" r="36" fill="#b45309" opacity="0.25"/><circle cx="1147.9" cy="1034.2" r="24" fill="#b45309" stroke="#ffffff" stroke-width="6"/><text x="1147.9" y="1042.2" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">3</text><rect x="1183.9" y="1000.2" width="235" height="64" rx="10" fill="#0f172a" opacity="0.88" stroke="#ffffff" stroke-width="2"/><text x="1195.9" y="1026.2" font-size="22" font-weight="700" fill="#ffffff">Khánh Khê</text><text x="1195.9" y="1050.2" font-size="17" font-weight="600" fill="#bae6fd">LS-KK-03 · Điểm 52.1</text></g><g class="map-site-node" style="cursor:pointer" onclick="selectSiteCard('LS-KX-04')"><line x1="1689.6" y1="1209.6" x2="1689.6" y2="1267.6" stroke="#0f172a" stroke-width="5"/><circle cx="1689.6" cy="1267.6" r="6" fill="#0f172a"/><circle cx="1689.6" cy="1209.6" r="36" fill="#b45309" opacity="0.25"/><circle cx="1689.6" cy="1209.6" r="24" fill="#b45309" stroke="#ffffff" stroke-width="6"/><text x="1689.6" y="1217.6" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">4</text><rect x="1429.6" y="1175.6" width="235" height="64" rx="10" fill="#0f172a" opacity="0.88" stroke="#ffffff" stroke-width="2"/><text x="1441.6" y="1201.6" font-size="22" font-weight="700" fill="#ffffff">Khuất Xá</text><text x="1441.6" y="1225.6" font-size="17" font-weight="600" fill="#bae6fd">LS-KX-04 · Điểm 52.6</text></g><g class="map-site-node" style="cursor:pointer" onclick="selectSiteCard('LS-CL-05')"><line x1="987.9" y1="1421.8" x2="932.8" y2="1403.5" stroke="#0f172a" stroke-width="5"/><circle cx="932.8" cy="1403.5" r="6" fill="#0f172a"/><circle cx="987.9" cy="1421.8" r="36" fill="#15803d" opacity="0.25"/><circle cx="987.9" cy="1421.8" r="24" fill="#15803d" stroke="#ffffff" stroke-width="6"/><text x="987.9" y="1429.8" text-anchor="middle" font-size="22" font-weight="800" fill="#ffffff">5</text><rect x="1023.9" y="1387.8" width="235" height="64" rx="10" fill="#0f172a" opacity="0.88" stroke="#ffffff" stroke-width="2"/><text x="1035.9" y="1413.8" font-size="22" font-weight="700" fill="#ffffff">Chi Lăng</text><text x="1035.9" y="1437.8" font-size="17" font-weight="600" fill="#bae6fd">LS-CL-05 · Điểm 53.8</text></g></svg>
+    <div class="legend">
+      <span><i class="dot" style="background:#15803d"></i>Theo dõi</span>
+      <span><i class="dot" style="background:#b45309"></i>Hạn chế</span>
+      <span><i class="dot" style="background:#b91c1c"></i>Đánh giá lại</span>
+      <span><b>Mũi tên đen:</b> Hướng dốc SRTM30m</span>
+      <span><b>Đường nét đứt xanh:</b> Tuyến khảo sát từ xa về gần</span>
+    </div>
+    <div class="notice">
+      <b>Giới hạn kỹ thuật:</b> Bản đồ trên đã được khống chế tọa độ trực tiếp trên lưới kinh–vĩ độ của tờ Bản đồ Địa chất tỉnh Lạng Sơn (sai số RMSE = 0.204 px). Nhấp vào từng điểm (1–5) trên bản đồ để xem hồ sơ địa kỹ thuật bên phải.
+    </div>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-weight:700;color:#16324f">Xem Bản đồ Địa chất – Khoáng sản 1:200.000 & Bản đồ Địa hình Gốc (Trang 3–4 PDF)</summary>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+        <figure style="margin:0;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+          <a href="2aOboR9psxKJ5JFT4OmAPUThZMW9su3oI2aTPhU8.jpg" target="_blank"><img src="2aOboR9psxKJ5JFT4OmAPUThZMW9su3oI2aTPhU8.jpg" alt="Bản đồ Địa chất 1:200.000" style="width:100%;height:260px;object-fit:contain;background:#0f172a"></a>
+          <figcaption style="padding:8px;font-size:12px"><b>Bản đồ Địa chất & Khoáng sản 1:200.000</b> (Tờ Bắc Kạn & Lạng Sơn, nhấn để phóng to)</figcaption>
+        </figure>
+        <figure style="margin:0;border:1px solid var(--line);border-radius:8px;overflow:hidden">
+          <a href="2aOboR9ptnnv1hHCIRHiEQBzIk4TNWGhGaozzUSO.jpg" target="_blank"><img src="2aOboR9ptnnv1hHCIRHiEQBzIk4TNWGhGaozzUSO.jpg" alt="Bản đồ Địa hình vị trí khảo sát" style="width:100%;height:260px;object-fit:contain;background:#0f172a"></a>
+          <figcaption style="padding:8px;font-size:12px"><b>Bản đồ Địa hình tổng quan</b> (Trang 3 báo cáo PDF, nhấn để phóng to)</figcaption>
+        </figure>
+      </div>
+    </details>
+  </div>
+  <div class="cards">
+            <article id="card-LS-QK-01" class="site-card">
+              <div class="site-heading">
+                <div>
+                  <span class="site-id">LS-QK-01</span>
+                  <h3>Quốc Khánh</h3>
+                </div>
+                <span class="status" style="background:#15803d">THEO DÕI</span>
+              </div>
+              <p><b>Vị trí:</b> Khu vực Tàng Chang, thôn Phi Mỹ (Cốc Mười cũ) · <small>22°21&#x27;28&quot;B, 106°31&#x27;29&quot;Đ</small></p>
+              <div class="metrics">
+                <span>1 điểm sạt</span>
+                <span>93 hộ</span>
+                <span>369 người</span>
+                <span>Điểm ưu tiên: 59.9 (Cao)</span>
+                <span>Đủ dữ liệu: 95.5%</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0"><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #dc2626;padding:2px 6px;border-radius:4px">Phơi lộ dân cư: <b>20.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #ea580c;padding:2px 6px;border-radius:4px">Hiện tượng ĐC: <b>20.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #d97706;padding:2px 6px;border-radius:4px">Số điểm sạt: <b>2.5</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #2563eb;padding:2px 6px;border-radius:4px">Mưa dự báo: <b>0.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0284c7;padding:2px 6px;border-radius:4px">Mưa 3d trước: <b>2.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0891b2;padding:2px 6px;border-radius:4px">Mưa LS 90d: <b>9.6</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #059669;padding:2px 6px;border-radius:4px">Độ dốc SRTM: <b>3.8</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #7c3aed;padding:2px 6px;border-radius:4px">Gần đường: <b>4.9</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #4f46e5;padding:2px 6px;border-radius:4px">Gần sông suối: <b>0.0</b></span></div>
+              <dl>
+                <dt>Lịch khảo sát</dt><dd>2026-11-11T09:00:00+07:00 (từ Hà Nội, 330 phút)</dd>
+                <dt>Hiện trạng nguy cơ</dt><dd>Tiềm ẩn sạt lở, sụt lún</dd>
+                <dt>Cao độ / Chênh cao</dt><dd>338.0 m / Δh = 12.0 m</dd>
+                <dt>Dốc TB / Cực đại</dt><dd>6.2° / 11.3° (hướng dốc 57.5°)</dd>
+                <dt>Hệ tầng địa chất</dt><dd>Hệ tầng Nà Quản (D1-2 nq) · medium (0.624) · Tiếp giáp: Hệ tầng Sông Hiến (37%)</dd>
+                <dt>Thạch học 1:200k</dt><dd>Đá phiến sét, đá phiến silic, đá vôi phân lớp mỏng – trung bình</dd>
+                <dt>Đứt gãy / Suối raster</dt><dd>3430.6 m / 461.5 m</dd>
+                <dt>Đường OSM gần nhất</dt><dd>5.1 m · trunk (Quốc lộ 3B)</dd>
+                <dt>Thủy hệ OSM gần nhất</dt><dd>n.a. m · n.a.</dd>
+                <dt>Mưa LS 30/90 ngày</dt><dd>35.0 / 672.9 mm (mưa 51 ngày)</dd>
+                <dt>Cực đại LS 1/3 ngày</dt><dd>91.3 / 207.9 mm (P95: 29.7 mm)</dd>
+                <dt>Mưa dự báo ngày KS</dt><dd>0.0 mm (xác suất 13%)</dd>
+                <dt>Mưa 3d trước / Đỉnh đợt</dt><dd>10.2 mm / Đỉnh 10–13/11: 39.0 mm</dd>
+                <dt>Đề xuất xử lý</dt><dd>Nghiên cứu khu tái định cư tập trung tại thôn Long Thịnh, diện tích 6,7 ha; dự kiến khoảng 46,6 tỷ đồng.</dd>
+                <dt>Tiến độ QA thực địa</dt><dd>pending (0/14 trường bắt buộc)</dd>
+              </dl>
+              <svg viewBox="0 0 220 68" style="width:100%;height:64px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-top:6px"><polyline points="18,18.8 110,47.2 202,44.9" fill="none" stroke="#0284c7" stroke-width="2.2"/><polyline points="18,28.2 110,47.2 202,44.9" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/><circle cx="110" cy="47.2" r="3.5" fill="#0f172a"/><text x="6" y="12" font-size="9.5" fill="#0284c7" font-weight="600">T–Đ: 350→338→339m</text><text x="114" y="12" font-size="9.5" fill="#dc2626" font-weight="600">N–B: 346→338→339m</text><text x="6" y="63" font-size="9" fill="#64748b">-60m</text><text x="110" y="63" text-anchor="middle" font-size="9" fill="#0f172a" font-weight="700">Tâm (0m)</text><text x="214" y="63" text-anchor="end" font-size="9" fill="#64748b">+60m</text></svg>
+              <p class="reason">Ngày khảo sát tại điểm chưa vượt ngưỡng mưa sơ bộ; vẫn phải kiểm tra cảnh báo NCHMF và dấu hiệu nứt/thấm tại chỗ. Lưu ý: trong đợt công tác có ngày mưa lớn 39.0 mm (2026-11-12).</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">
+                <span id="card-note-count-LS-QK-01" style="font-size:12.5px;font-weight:700;color:#16324f">Nhật ký tọa độ: đang tải...</span>
+                <button type="button" class="btn-toggle" style="background:#16324f;color:#fff" onclick="openNoteDialogForSite('LS-QK-01')">➕ Tạo ghi chú Nhật ký tọa độ</button>
+              </div>
+              <details style="margin-top:6px"><summary>Cảnh báo QA & Lưu ý Địa kỹ thuật (0)</summary><ul><li>Không có mâu thuẫn dữ liệu gốc.</li></ul></details>
+            </article>
+            
+            <article id="card-LS-DD-02" class="site-card">
+              <div class="site-heading">
+                <div>
+                  <span class="site-id">LS-DD-02</span>
+                  <h3>Đồng Đăng</h3>
+                </div>
+                <span class="status" style="background:#15803d">THEO DÕI</span>
+              </div>
+              <p><b>Vị trí:</b> Các thôn Tam Lung, Nhất Tâm, Phú Lộc · <small>21°57&#x27;03&quot;B, 106°41&#x27;53&quot;Đ</small></p>
+              <div class="metrics">
+                <span>3 điểm sạt</span>
+                <span>56 hộ</span>
+                <span>195 người</span>
+                <span>Điểm ưu tiên: 53.7 (Trung bình)</span>
+                <span>Đủ dữ liệu: 100.0%</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0"><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #dc2626;padding:2px 6px;border-radius:4px">Phơi lộ dân cư: <b>12.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #ea580c;padding:2px 6px;border-radius:4px">Hiện tượng ĐC: <b>16.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #d97706;padding:2px 6px;border-radius:4px">Số điểm sạt: <b>7.5</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #2563eb;padding:2px 6px;border-radius:4px">Mưa dự báo: <b>2.3</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0284c7;padding:2px 6px;border-radius:4px">Mưa 3d trước: <b>1.7</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0891b2;padding:2px 6px;border-radius:4px">Mưa LS 90d: <b>8.6</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #059669;padding:2px 6px;border-radius:4px">Độ dốc SRTM: <b>1.6</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #7c3aed;padding:2px 6px;border-radius:4px">Gần đường: <b>4.9</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #4f46e5;padding:2px 6px;border-radius:4px">Gần sông suối: <b>4.3</b></span></div>
+              <dl>
+                <dt>Lịch khảo sát</dt><dd>2026-11-11T15:00:00+07:00 (từ Quốc Khánh, 150 phút)</dd>
+                <dt>Hiện trạng nguy cơ</dt><dd>Ảnh hưởng sạt lở đất</dd>
+                <dt>Cao độ / Chênh cao</dt><dd>253.0 m / Δh = 6.0 m</dd>
+                <dt>Dốc TB / Cực đại</dt><dd>3.7° / 4.8° (hướng dốc 129.8°)</dd>
+                <dt>Hệ tầng địa chất</dt><dd>Hệ tầng Khôn Làng (T2a kl) · high (0.852)</dd>
+                <dt>Thạch học 1:200k</dt><dd>Cát kết, bột kết, đá phiến sét xen ryolit, tuf ryolit, đá vôi thấu kính</dd>
+                <dt>Đứt gãy / Suối raster</dt><dd>69.4 m / 226.9 m</dd>
+                <dt>Đường OSM gần nhất</dt><dd>7.0 m · residential (Phố Nam Quan)</dd>
+                <dt>Thủy hệ OSM gần nhất</dt><dd>202.6 m · stream (Suối Đồng Đăng)</dd>
+                <dt>Mưa LS 30/90 ngày</dt><dd>35.1 / 603.0 mm (mưa 50 ngày)</dd>
+                <dt>Cực đại LS 1/3 ngày</dt><dd>105.5 / 260.7 mm (P95: 21.7 mm)</dd>
+                <dt>Mưa dự báo ngày KS</dt><dd>3.4 mm (xác suất 25%)</dd>
+                <dt>Mưa 3d trước / Đỉnh đợt</dt><dd>8.7 mm / Đỉnh 10–13/11: 22.6 mm</dd>
+                <dt>Đề xuất xử lý</dt><dd>Đánh giá mức độ nguy hiểm, khuyến cáo người dân và tham mưu hỗ trợ kinh phí.</dd>
+                <dt>Tiến độ QA thực địa</dt><dd>pending (0/14 trường bắt buộc)</dd>
+              </dl>
+              <svg viewBox="0 0 220 68" style="width:100%;height:64px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-top:6px"><polyline points="18,21.6 110,25.4 202,44.4" fill="none" stroke="#0284c7" stroke-width="2.2"/><polyline points="18,40.6 110,25.4 202,21.6" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/><circle cx="110" cy="25.4" r="3.5" fill="#0f172a"/><text x="6" y="12" font-size="9.5" fill="#0284c7" font-weight="600">T–Đ: 254→253→248m</text><text x="114" y="12" font-size="9.5" fill="#dc2626" font-weight="600">N–B: 249→253→254m</text><text x="6" y="63" font-size="9" fill="#64748b">-60m</text><text x="110" y="63" text-anchor="middle" font-size="9" fill="#0f172a" font-weight="700">Tâm (0m)</text><text x="214" y="63" text-anchor="end" font-size="9" fill="#64748b">+60m</text></svg>
+              <p class="reason">Ngày khảo sát tại điểm chưa vượt ngưỡng mưa sơ bộ; vẫn phải kiểm tra cảnh báo NCHMF và dấu hiệu nứt/thấm tại chỗ. Lưu ý: trong đợt công tác có ngày mưa lớn 22.6 mm (2026-11-13).</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">
+                <span id="card-note-count-LS-DD-02" style="font-size:12.5px;font-weight:700;color:#16324f">Nhật ký tọa độ: đang tải...</span>
+                <button type="button" class="btn-toggle" style="background:#16324f;color:#fff" onclick="openNoteDialogForSite('LS-DD-02')">➕ Tạo ghi chú Nhật ký tọa độ</button>
+              </div>
+              <details style="margin-top:6px"><summary>Cảnh báo QA & Lưu ý Địa kỹ thuật (1)</summary><ul><li>Độ dốc trung bình SRTM30m cách tâm 60 m tại Đồng Đăng chỉ đạt 3.7° (cực đại hướng 4.8°) do hiệu ứng làm phẳng của lưới DEM 30 m ở chân sườn/thung lũng; hiện trường thực tế có &#x27;Ảnh hưởng sạt lở đất&#x27; nên tuyệt đối không coi dốc SRTM thấp là mái dốc ổn định.</li></ul></details>
+            </article>
+            
+            <article id="card-LS-KK-03" class="site-card">
+              <div class="site-heading">
+                <div>
+                  <span class="site-id">LS-KK-03</span>
+                  <h3>Khánh Khê</h3>
+                </div>
+                <span class="status" style="background:#b45309">HẠN CHẾ</span>
+              </div>
+              <p><b>Vị trí:</b> Thôn Khuổi Mạ · <small>21°52&#x27;06&quot;B, 106°38&#x27;42&quot;Đ</small></p>
+              <div class="metrics">
+                <span>1 điểm sạt</span>
+                <span>21 hộ</span>
+                <span>92 người</span>
+                <span>Điểm ưu tiên: 52.1 (Trung bình)</span>
+                <span>Đủ dữ liệu: 100.0%</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0"><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #dc2626;padding:2px 6px;border-radius:4px">Phơi lộ dân cư: <b>4.5</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #ea580c;padding:2px 6px;border-radius:4px">Hiện tượng ĐC: <b>16.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #d97706;padding:2px 6px;border-radius:4px">Số điểm sạt: <b>2.5</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #2563eb;padding:2px 6px;border-radius:4px">Mưa dự báo: <b>15.7</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0284c7;padding:2px 6px;border-radius:4px">Mưa 3d trước: <b>0.6</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0891b2;padding:2px 6px;border-radius:4px">Mưa LS 90d: <b>8.2</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #059669;padding:2px 6px;border-radius:4px">Độ dốc SRTM: <b>9.4</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #7c3aed;padding:2px 6px;border-radius:4px">Gần đường: <b>0.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #4f46e5;padding:2px 6px;border-radius:4px">Gần sông suối: <b>0.4</b></span></div>
+              <dl>
+                <dt>Lịch khảo sát</dt><dd>2026-11-12T09:00:00+07:00 (từ Đồng Đăng, 45 phút)</dd>
+                <dt>Hiện trạng nguy cơ</dt><dd>Nguy cơ ảnh hưởng do sạt lở đất</dd>
+                <dt>Cao độ / Chênh cao</dt><dd>351.0 m / Δh = 34.0 m</dd>
+                <dt>Dốc TB / Cực đại</dt><dd>16.6° / 28.1° (hướng dốc 342.1°)</dd>
+                <dt>Hệ tầng địa chất</dt><dd>Hệ tầng Khôn Làng (T2a kl) · high (0.994)</dd>
+                <dt>Thạch học 1:200k</dt><dd>Cát kết, bột kết, đá phiến sét xen ryolit, tuf ryolit, đá vôi thấu kính</dd>
+                <dt>Đứt gãy / Suối raster</dt><dd>2159.0 m / 1163.9 m</dd>
+                <dt>Đường OSM gần nhất</dt><dd>667.8 m · unclassified</dd>
+                <dt>Thủy hệ OSM gần nhất</dt><dd>1378.2 m · river (Sông Kỳ Cùng)</dd>
+                <dt>Mưa LS 30/90 ngày</dt><dd>35.0 / 571.4 mm (mưa 48 ngày)</dd>
+                <dt>Cực đại LS 1/3 ngày</dt><dd>102.0 / 253.6 mm (P95: 21.5 mm)</dd>
+                <dt>Mưa dự báo ngày KS</dt><dd>23.6 mm (xác suất 58%)</dd>
+                <dt>Mưa 3d trước / Đỉnh đợt</dt><dd>3.1 mm / Đỉnh 10–13/11: 23.6 mm</dd>
+                <dt>Đề xuất xử lý</dt><dd>Bố trí vốn xây dựng khu tái định cư, hỗ trợ di dời và hoàn thiện thủ tục đất đai, đầu tư.</dd>
+                <dt>Tiến độ QA thực địa</dt><dd>pending (0/14 trường bắt buộc)</dd>
+              </dl>
+              <svg viewBox="0 0 220 68" style="width:100%;height:64px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-top:6px"><polyline points="18,49.0 110,48.0 202,38.0" fill="none" stroke="#0284c7" stroke-width="2.2"/><polyline points="18,16.0 110,48.0 202,50.0" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/><circle cx="110" cy="48.0" r="3.5" fill="#0f172a"/><text x="6" y="12" font-size="9.5" fill="#0284c7" font-weight="600">T–Đ: 350→351→361m</text><text x="114" y="12" font-size="9.5" fill="#dc2626" font-weight="600">N–B: 383→351→349m</text><text x="6" y="63" font-size="9" fill="#64748b">-60m</text><text x="110" y="63" text-anchor="middle" font-size="9" fill="#0f172a" font-weight="700">Tâm (0m)</text><text x="214" y="63" text-anchor="end" font-size="9" fill="#64748b">+60m</text></svg>
+              <p class="reason">Mưa ngày khảo sát (23.6 mm) hoặc mưa tích lũy ba ngày (3.1 mm) vượt ngưỡng cảnh báo sơ bộ; hạn chế tiếp cận sát chân/đỉnh taluy.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">
+                <span id="card-note-count-LS-KK-03" style="font-size:12.5px;font-weight:700;color:#16324f">Nhật ký tọa độ: đang tải...</span>
+                <button type="button" class="btn-toggle" style="background:#16324f;color:#fff" onclick="openNoteDialogForSite('LS-KK-03')">➕ Tạo ghi chú Nhật ký tọa độ</button>
+              </div>
+              <details style="margin-top:6px"><summary>Cảnh báo QA & Lưu ý Địa kỹ thuật (0)</summary><ul><li>Không có mâu thuẫn dữ liệu gốc.</li></ul></details>
+            </article>
+            
+            <article id="card-LS-KX-04" class="site-card">
+              <div class="site-heading">
+                <div>
+                  <span class="site-id">LS-KX-04</span>
+                  <h3>Khuất Xá</h3>
+                </div>
+                <span class="status" style="background:#b45309">HẠN CHẾ</span>
+              </div>
+              <p><b>Vị trí:</b> Xóm Còn Chè, thôn Tam Gia · <small>21°44&#x27;51&quot;B, 107°01&#x27;06&quot;Đ</small></p>
+              <div class="metrics">
+                <span>4 điểm sạt</span>
+                <span>25 hộ</span>
+                <span>Chưa rõ (PDF: 80) người</span>
+                <span>Điểm ưu tiên: 52.6 (Trung bình)</span>
+                <span>Đủ dữ liệu: 100.0%</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0"><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #dc2626;padding:2px 6px;border-radius:4px">Phơi lộ dân cư: <b>5.4</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #ea580c;padding:2px 6px;border-radius:4px">Hiện tượng ĐC: <b>16.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #d97706;padding:2px 6px;border-radius:4px">Số điểm sạt: <b>10.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #2563eb;padding:2px 6px;border-radius:4px">Mưa dự báo: <b>7.9</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0284c7;padding:2px 6px;border-radius:4px">Mưa 3d trước: <b>0.3</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0891b2;padding:2px 6px;border-radius:4px">Mưa LS 90d: <b>9.3</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #059669;padding:2px 6px;border-radius:4px">Độ dốc SRTM: <b>1.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #7c3aed;padding:2px 6px;border-radius:4px">Gần đường: <b>3.4</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #4f46e5;padding:2px 6px;border-radius:4px">Gần sông suối: <b>4.6</b></span></div>
+              <dl>
+                <dt>Lịch khảo sát</dt><dd>2026-11-12T15:00:00+07:00 (từ Khánh Khê, 150 phút)</dd>
+                <dt>Hiện trạng nguy cơ</dt><dd>Sạt lở đất; 11 hộ cũ và 14 hộ phát sinh</dd>
+                <dt>Cao độ / Chênh cao</dt><dd>281.0 m / Δh = 3.0 m</dd>
+                <dt>Dốc TB / Cực đại</dt><dd>1.4° / 2.9° (hướng dốc 180.0°)</dd>
+                <dt>Hệ tầng địa chất</dt><dd>Hệ tầng Rinh Chùa (T2l rc) · medium (0.583) · Tiếp giáp: Hệ tầng Na Dương (19%)</dd>
+                <dt>Thạch học 1:200k</dt><dd>Cát kết, bột kết, đá phiến sét đen, sét vôi</dd>
+                <dt>Đứt gãy / Suối raster</dt><dd>1057.4 m / 329.1 m</dd>
+                <dt>Đường OSM gần nhất</dt><dd>156.6 m · service</dd>
+                <dt>Thủy hệ OSM gần nhất</dt><dd>114.7 m · stream</dd>
+                <dt>Mưa LS 30/90 ngày</dt><dd>64.7 / 652.8 mm (mưa 56 ngày)</dd>
+                <dt>Cực đại LS 1/3 ngày</dt><dd>139.7 / 251.5 mm (P95: 23.1 mm)</dd>
+                <dt>Mưa dự báo ngày KS</dt><dd>11.8 mm (xác suất 54%)</dd>
+                <dt>Mưa 3d trước / Đỉnh đợt</dt><dd>1.4 mm / Đỉnh 10–13/11: 11.8 mm</dd>
+                <dt>Đề xuất xử lý</dt><dd>Bố trí tái định cư, khoan khảo sát địa chất và đo vẽ ranh giới cung trượt.</dd>
+                <dt>Tiến độ QA thực địa</dt><dd>pending (0/14 trường bắt buộc)</dd>
+              </dl>
+              <svg viewBox="0 0 220 68" style="width:100%;height:64px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-top:6px"><polyline points="18,41.1 110,41.1 202,41.1" fill="none" stroke="#0284c7" stroke-width="2.2"/><polyline points="18,41.1 110,41.1 202,24.9" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/><circle cx="110" cy="41.1" r="3.5" fill="#0f172a"/><text x="6" y="12" font-size="9.5" fill="#0284c7" font-weight="600">T–Đ: 281→281→281m</text><text x="114" y="12" font-size="9.5" fill="#dc2626" font-weight="600">N–B: 281→281→284m</text><text x="6" y="63" font-size="9" fill="#64748b">-60m</text><text x="110" y="63" text-anchor="middle" font-size="9" fill="#0f172a" font-weight="700">Tâm (0m)</text><text x="214" y="63" text-anchor="end" font-size="9" fill="#64748b">+60m</text></svg>
+              <p class="reason">Mưa ngày khảo sát (11.8 mm) hoặc mưa tích lũy ba ngày (1.4 mm) vượt ngưỡng cảnh báo sơ bộ; hạn chế tiếp cận sát chân/đỉnh taluy.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">
+                <span id="card-note-count-LS-KX-04" style="font-size:12.5px;font-weight:700;color:#16324f">Nhật ký tọa độ: đang tải...</span>
+                <button type="button" class="btn-toggle" style="background:#16324f;color:#fff" onclick="openNoteDialogForSite('LS-KX-04')">➕ Tạo ghi chú Nhật ký tọa độ</button>
+              </div>
+              <details style="margin-top:6px"><summary>Cảnh báo QA & Lưu ý Địa kỹ thuật (2)</summary><ul><li>Mâu thuẫn nhân khẩu: PDF ghi 80, Excel để trống.</li><li>Độ dốc trung bình SRTM30m cách tâm 60 m tại Khuất Xá chỉ đạt 1.4° (cực đại hướng 2.9°) do hiệu ứng làm phẳng của lưới DEM 30 m ở chân sườn/thung lũng; hiện trường thực tế có &#x27;Sạt lở đất; 11 hộ cũ và 14 hộ phát sinh&#x27; nên tuyệt đối không coi dốc SRTM thấp là mái dốc ổn định.</li></ul></details>
+            </article>
+            
+            <article id="card-LS-CL-05" class="site-card">
+              <div class="site-heading">
+                <div>
+                  <span class="site-id">LS-CL-05</span>
+                  <h3>Chi Lăng</h3>
+                </div>
+                <span class="status" style="background:#15803d">THEO DÕI</span>
+              </div>
+              <p><b>Vị trí:</b> Thôn Hợp Tiến và thôn Hòa Bình 2 · <small>21°36&#x27;05&quot;B, 106°32&#x27;05&quot;Đ</small></p>
+              <div class="metrics">
+                <span>2 điểm sạt</span>
+                <span>23 hộ</span>
+                <span>80 người</span>
+                <span>Điểm ưu tiên: 53.8 (Trung bình)</span>
+                <span>Đủ dữ liệu: 100.0%</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0"><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #dc2626;padding:2px 6px;border-radius:4px">Phơi lộ dân cư: <b>4.9</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #ea580c;padding:2px 6px;border-radius:4px">Hiện tượng ĐC: <b>20.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #d97706;padding:2px 6px;border-radius:4px">Số điểm sạt: <b>5.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #2563eb;padding:2px 6px;border-radius:4px">Mưa dự báo: <b>5.9</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0284c7;padding:2px 6px;border-radius:4px">Mưa 3d trước: <b>5.2</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #0891b2;padding:2px 6px;border-radius:4px">Mưa LS 90d: <b>10.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #059669;padding:2px 6px;border-radius:4px">Độ dốc SRTM: <b>1.0</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #7c3aed;padding:2px 6px;border-radius:4px">Gần đường: <b>4.9</b></span><span style="font-size:11px;background:#f1f5f9;border-left:3px solid #4f46e5;padding:2px 6px;border-radius:4px">Gần sông suối: <b>2.3</b></span></div>
+              <dl>
+                <dt>Lịch khảo sát</dt><dd>2026-11-13T10:00:00+07:00 (từ Khuất Xá, 150 phút)</dd>
+                <dt>Hiện trạng nguy cơ</dt><dd>Tiềm ẩn sạt lở khối đá</dd>
+                <dt>Cao độ / Chênh cao</dt><dd>54.0 m / Δh = 3.0 m</dd>
+                <dt>Dốc TB / Cực đại</dt><dd>1.5° / 2.9° (hướng dốc 288.4°)</dd>
+                <dt>Hệ tầng địa chất</dt><dd>Hệ tầng Lạng Sơn (T1 ls) · medium (0.384) · Tiếp giáp: Hệ tầng Khôn Làng (33%), Hệ tầng Bắc Sơn (29%)</dd>
+                <dt>Thạch học 1:200k</dt><dd>Đá phiến sét, bột kết, cát kết xen đá vôi mỏng</dd>
+                <dt>Đứt gãy / Suối raster</dt><dd>2591.8 m / 668.5 m</dd>
+                <dt>Đường OSM gần nhất</dt><dd>5.5 m · residential</dd>
+                <dt>Thủy hệ OSM gần nhất</dt><dd>822.9 m · river (Sông Thương)</dd>
+                <dt>Mưa LS 30/90 ngày</dt><dd>41.3 / 718.0 mm (mưa 52 ngày)</dd>
+                <dt>Cực đại LS 1/3 ngày</dt><dd>126.9 / 280.1 mm (P95: 26.5 mm)</dd>
+                <dt>Mưa dự báo ngày KS</dt><dd>8.8 mm (xác suất 57%)</dd>
+                <dt>Mưa 3d trước / Đỉnh đợt</dt><dd>26.0 mm / Đỉnh 10–13/11: 26.0 mm</dd>
+                <dt>Đề xuất xử lý</dt><dd>Phá dỡ khối đá nguy cơ sạt lở và bố trí khu dân cư tập trung cho các trường hợp khẩn cấp.</dd>
+                <dt>Tiến độ QA thực địa</dt><dd>pending (0/14 trường bắt buộc)</dd>
+              </dl>
+              <svg viewBox="0 0 220 68" style="width:100%;height:64px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-top:6px"><polyline points="18,41.1 110,24.9 202,24.9" fill="none" stroke="#0284c7" stroke-width="2.2"/><polyline points="18,24.9 110,24.9 202,30.3" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/><circle cx="110" cy="24.9" r="3.5" fill="#0f172a"/><text x="6" y="12" font-size="9.5" fill="#0284c7" font-weight="600">T–Đ: 51→54→54m</text><text x="114" y="12" font-size="9.5" fill="#dc2626" font-weight="600">N–B: 54→54→53m</text><text x="6" y="63" font-size="9" fill="#64748b">-60m</text><text x="110" y="63" text-anchor="middle" font-size="9" fill="#0f172a" font-weight="700">Tâm (0m)</text><text x="214" y="63" text-anchor="end" font-size="9" fill="#64748b">+60m</text></svg>
+              <p class="reason">Ngày khảo sát tại điểm chưa vượt ngưỡng mưa sơ bộ; vẫn phải kiểm tra cảnh báo NCHMF và dấu hiệu nứt/thấm tại chỗ. Lưu ý: trong đợt công tác có ngày mưa lớn 26.0 mm (2026-11-12).</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0">
+                <span id="card-note-count-LS-CL-05" style="font-size:12.5px;font-weight:700;color:#16324f">Nhật ký tọa độ: đang tải...</span>
+                <button type="button" class="btn-toggle" style="background:#16324f;color:#fff" onclick="openNoteDialogForSite('LS-CL-05')">➕ Tạo ghi chú Nhật ký tọa độ</button>
+              </div>
+              <details style="margin-top:6px"><summary>Cảnh báo QA & Lưu ý Địa kỹ thuật (2)</summary><ul><li>Mâu thuẫn số hộ/nhân khẩu: Excel ghi 23/80, PDF hiển thị dấu gạch.</li><li>Độ dốc trung bình SRTM30m cách tâm 60 m tại Chi Lăng chỉ đạt 1.5° (cực đại hướng 2.9°) do hiệu ứng làm phẳng của lưới DEM 30 m ở chân sườn/thung lũng; hiện trường thực tế có &#x27;Tiềm ẩn sạt lở khối đá&#x27; nên tuyệt đối không coi dốc SRTM thấp là mái dốc ổn định.</li></ul></details>
+            </article>
+            </div>
+</section>
+
+<section class="panel" style="margin-top:18px">
+  <h2>Biểu đồ Chuỗi Mưa Dự Báo 16 Ngày (Open-Meteo) & Cảnh Báo Đợt Mưa 12–13/11/2026</h2>
+  <svg viewBox="0 0 880 290" style="width:100%;height:auto;background:#f8fafc;border:1px solid #dbe3ec;border-radius:10px" role="img" aria-label="Biểu đồ mưa dự báo 16 ngày"><rect x="403.8" y="28" width="201.0" height="206" fill="#fef3c7" opacity="0.65"/><text x="504.2" y="42" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">Đợt khảo sát thực địa (10–13/11)</text><line x1="52" y1="234.0" x2="856" y2="234.0" stroke="#e2e8f0" stroke-width="1.2" /><text x="46" y="238.0" text-anchor="end" font-size="11" fill="#475569">0 mm</text><line x1="52" y1="188.2" x2="856" y2="188.2" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="5,4"/><text x="46" y="192.2" text-anchor="end" font-size="11" fill="#475569">10 mm</text><line x1="52" y1="142.4" x2="856" y2="142.4" stroke="#e2e8f0" stroke-width="1.2" /><text x="46" y="146.4" text-anchor="end" font-size="11" fill="#475569">20 mm</text><line x1="52" y1="96.7" x2="856" y2="96.7" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="5,4"/><text x="46" y="100.7" text-anchor="end" font-size="11" fill="#475569">30 mm</text><line x1="52" y1="50.9" x2="856" y2="50.9" stroke="#e2e8f0" stroke-width="1.2" /><text x="46" y="54.9" text-anchor="end" font-size="11" fill="#475569">40 mm</text><rect x="57.5" y="234.0" width="6.8" height="1.0" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-03): 0.0 mm</title></rect><rect x="65.4" y="224.4" width="6.8" height="9.6" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-03): 2.1 mm</title></rect><rect x="73.2" y="213.4" width="6.8" height="20.6" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-03): 4.5 mm</title></rect><rect x="81.0" y="231.7" width="6.8" height="2.3" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-03): 0.5 mm</title></rect><rect x="88.9" y="230.3" width="6.8" height="3.7" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-03): 0.8 mm</title></rect><text x="77.1" y="262" text-anchor="middle" font-size="11" fill="#334155">03/11</text><rect x="107.8" y="228.5" width="6.8" height="5.5" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-04): 1.2 mm</title></rect><rect x="115.6" y="229.9" width="6.8" height="4.1" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-04): 0.9 mm</title></rect><rect x="123.5" y="229.9" width="6.8" height="4.1" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-04): 0.9 mm</title></rect><rect x="131.3" y="225.8" width="6.8" height="8.2" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-04): 1.8 mm</title></rect><rect x="139.1" y="225.8" width="6.8" height="8.2" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-04): 1.8 mm</title></rect><text x="127.4" y="262" text-anchor="middle" font-size="11" fill="#334155">04/11</text><rect x="158.0" y="211.1" width="6.8" height="22.9" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-05): 5.0 mm</title></rect><rect x="165.9" y="229.4" width="6.8" height="4.6" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-05): 1.0 mm</title></rect><rect x="173.7" y="229.4" width="6.8" height="4.6" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-05): 1.0 mm</title></rect><rect x="181.5" y="229.0" width="6.8" height="5.0" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-05): 1.1 mm</title></rect><rect x="189.4" y="223.0" width="6.8" height="11.0" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-05): 2.4 mm</title></rect><text x="177.6" y="262" text-anchor="middle" font-size="11" fill="#334155">05/11</text><rect x="208.3" y="186.4" width="6.8" height="47.6" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-06): 10.4 mm</title></rect><rect x="216.1" y="201.5" width="6.8" height="32.5" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-06): 7.1 mm</title></rect><rect x="224.0" y="191.0" width="6.8" height="43.0" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-06): 9.4 mm</title></rect><rect x="231.8" y="217.5" width="6.8" height="16.5" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-06): 3.6 mm</title></rect><rect x="239.6" y="191.9" width="6.8" height="42.1" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-06): 9.2 mm</title></rect><text x="227.9" y="262" text-anchor="middle" font-size="11" fill="#334155">06/11</text><rect x="258.5" y="201.5" width="6.8" height="32.5" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-07): 7.1 mm</title></rect><rect x="266.4" y="221.2" width="6.8" height="12.8" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-07): 2.8 mm</title></rect><rect x="274.2" y="223.5" width="6.8" height="10.5" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-07): 2.3 mm</title></rect><rect x="282.0" y="202.0" width="6.8" height="32.0" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-07): 7.0 mm</title></rect><rect x="289.9" y="220.7" width="6.8" height="13.3" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-07): 2.9 mm</title></rect><text x="278.1" y="262" text-anchor="middle" font-size="11" fill="#334155">07/11</text><rect x="308.8" y="191.9" width="6.8" height="42.1" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-08): 9.2 mm</title></rect><rect x="316.6" y="197.4" width="6.8" height="36.6" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-08): 8.0 mm</title></rect><rect x="324.5" y="211.6" width="6.8" height="22.4" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-08): 4.9 mm</title></rect><rect x="332.3" y="216.6" width="6.8" height="17.4" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-08): 3.8 mm</title></rect><rect x="340.1" y="225.8" width="6.8" height="8.2" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-08): 1.8 mm</title></rect><text x="328.4" y="262" text-anchor="middle" font-size="11" fill="#334155">08/11</text><rect x="359.0" y="229.4" width="6.8" height="4.6" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-09): 1.0 mm</title></rect><rect x="366.9" y="230.8" width="6.8" height="3.2" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-09): 0.7 mm</title></rect><rect x="374.7" y="231.7" width="6.8" height="2.3" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-09): 0.5 mm</title></rect><rect x="382.5" y="229.4" width="6.8" height="4.6" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-09): 1.0 mm</title></rect><rect x="390.4" y="188.7" width="6.8" height="45.3" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-09): 9.9 mm</title></rect><text x="378.6" y="262" text-anchor="middle" font-size="11" fill="#334155">09/11</text><rect x="409.3" y="234.0" width="6.8" height="1.0" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-10): 0.0 mm</title></rect><rect x="417.1" y="234.0" width="6.8" height="1.0" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-10): 0.0 mm</title></rect><rect x="425.0" y="234.0" width="6.8" height="1.0" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-10): 0.0 mm</title></rect><rect x="432.8" y="234.0" width="6.8" height="1.0" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-10): 0.0 mm</title></rect><rect x="440.6" y="234.0" width="6.8" height="1.0" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-10): 0.0 mm</title></rect><text x="428.9" y="262" text-anchor="middle" font-size="11" fill="#334155">10/11</text><rect x="459.5" y="234.0" width="6.8" height="1.0" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-11): 0.0 mm</title></rect><rect x="467.4" y="218.4" width="6.8" height="15.6" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-11): 3.4 mm</title></rect><rect x="475.2" y="222.1" width="6.8" height="11.9" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-11): 2.6 mm</title></rect><rect x="483.0" y="232.2" width="6.8" height="1.8" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-11): 0.4 mm</title></rect><rect x="490.9" y="234.0" width="6.8" height="1.0" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-11): 0.0 mm</title></rect><text x="479.1" y="262" text-anchor="middle" font-size="11" fill="#334155">11/11</text><rect x="509.8" y="55.5" width="6.8" height="178.5" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-12): 39.0 mm</title></rect><rect x="517.6" y="133.3" width="6.8" height="100.7" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-12): 22.0 mm</title></rect><rect x="525.5" y="126.0" width="6.8" height="108.0" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-12): 23.6 mm</title></rect><rect x="533.3" y="180.0" width="6.8" height="54.0" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-12): 11.8 mm</title></rect><rect x="541.1" y="115.0" width="6.8" height="119.0" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-12): 26.0 mm</title></rect><text x="529.4" y="262" text-anchor="middle" font-size="11" fill="#334155">12/11</text><rect x="560.0" y="96.7" width="6.8" height="137.3" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-13): 30.0 mm</title></rect><rect x="567.9" y="130.5" width="6.8" height="103.5" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-13): 22.6 mm</title></rect><rect x="575.7" y="139.7" width="6.8" height="94.3" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-13): 20.6 mm</title></rect><rect x="583.5" y="218.4" width="6.8" height="15.6" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-13): 3.4 mm</title></rect><rect x="591.4" y="193.7" width="6.8" height="40.3" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-13): 8.8 mm</title></rect><text x="579.6" y="262" text-anchor="middle" font-size="11" fill="#334155">13/11</text><rect x="610.3" y="234.0" width="6.8" height="1.0" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-14): 0.0 mm</title></rect><rect x="618.1" y="231.3" width="6.8" height="2.7" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-14): 0.6 mm</title></rect><rect x="626.0" y="231.3" width="6.8" height="2.7" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-14): 0.6 mm</title></rect><rect x="633.8" y="231.3" width="6.8" height="2.7" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-14): 0.6 mm</title></rect><rect x="641.6" y="234.0" width="6.8" height="1.0" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-14): 0.0 mm</title></rect><text x="629.9" y="262" text-anchor="middle" font-size="11" fill="#334155">14/11</text><rect x="660.5" y="229.4" width="6.8" height="4.6" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-15): 1.0 mm</title></rect><rect x="668.4" y="225.8" width="6.8" height="8.2" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-15): 1.8 mm</title></rect><rect x="676.2" y="228.5" width="6.8" height="5.5" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-15): 1.2 mm</title></rect><rect x="684.0" y="234.0" width="6.8" height="1.0" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-15): 0.0 mm</title></rect><rect x="691.9" y="234.0" width="6.8" height="1.0" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-15): 0.0 mm</title></rect><text x="680.1" y="262" text-anchor="middle" font-size="11" fill="#334155">15/11</text><rect x="710.8" y="188.2" width="6.8" height="45.8" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-16): 10.0 mm</title></rect><rect x="718.6" y="186.4" width="6.8" height="47.6" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-16): 10.4 mm</title></rect><rect x="726.5" y="191.0" width="6.8" height="43.0" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-16): 9.4 mm</title></rect><rect x="734.3" y="215.7" width="6.8" height="18.3" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-16): 4.0 mm</title></rect><rect x="742.1" y="195.5" width="6.8" height="38.5" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-16): 8.4 mm</title></rect><text x="730.4" y="262" text-anchor="middle" font-size="11" fill="#334155">16/11</text><rect x="761.0" y="106.7" width="6.8" height="127.3" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-17): 27.8 mm</title></rect><rect x="768.9" y="147.9" width="6.8" height="86.1" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-17): 18.8 mm</title></rect><rect x="776.7" y="170.8" width="6.8" height="63.2" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-17): 13.8 mm</title></rect><rect x="784.5" y="128.7" width="6.8" height="105.3" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-17): 23.0 mm</title></rect><rect x="792.4" y="88.4" width="6.8" height="145.6" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-17): 31.8 mm</title></rect><text x="780.6" y="262" text-anchor="middle" font-size="11" fill="#334155">17/11</text><rect x="811.3" y="134.4" width="6.8" height="99.6" fill="#dc2626" rx="1.5"><title>Quốc Khánh (2026-11-18): 21.8 mm</title></rect><rect x="819.1" y="200.4" width="6.8" height="33.6" fill="#2563eb" rx="1.5"><title>Đồng Đăng (2026-11-18): 7.3 mm</title></rect><rect x="827.0" y="207.9" width="6.8" height="26.1" fill="#0d9488" rx="1.5"><title>Khánh Khê (2026-11-18): 5.7 mm</title></rect><rect x="834.8" y="183.2" width="6.8" height="50.8" fill="#d97706" rx="1.5"><title>Khuất Xá (2026-11-18): 11.1 mm</title></rect><rect x="842.6" y="57.1" width="6.8" height="176.9" fill="#7c3aed" rx="1.5"><title>Chi Lăng (2026-11-18): 38.6 mm</title></rect><text x="830.9" y="262" text-anchor="middle" font-size="11" fill="#334155">18/11</text><rect x="52" y="274" width="10" height="10" rx="2" fill="#dc2626"/><text x="66" y="283" font-size="11" font-weight="600" fill="#1e293b">Quốc Khánh (LS-QK-01)</text><rect x="207" y="274" width="10" height="10" rx="2" fill="#2563eb"/><text x="221" y="283" font-size="11" font-weight="600" fill="#1e293b">Đồng Đăng (LS-DD-02)</text><rect x="362" y="274" width="10" height="10" rx="2" fill="#0d9488"/><text x="376" y="283" font-size="11" font-weight="600" fill="#1e293b">Khánh Khê (LS-KK-03)</text><rect x="517" y="274" width="10" height="10" rx="2" fill="#d97706"/><text x="531" y="283" font-size="11" font-weight="600" fill="#1e293b">Khuất Xá (LS-KX-04)</text><rect x="672" y="274" width="10" height="10" rx="2" fill="#7c3aed"/><text x="686" y="283" font-size="11" font-weight="600" fill="#1e293b">Chi Lăng (LS-CL-05)</text></svg>
+  <div class="notice">
+    <b>Cảnh báo khí tượng đợt khảo sát:</b> Mặc dù thời điểm đoàn có mặt tại Quốc Khánh (09h ngày 11/11) và Đồng Đăng (15h ngày 11/11) lượng mưa dự báo thấp (0,0–3,4 mm), nhưng sang <b>ngày 12/11 và 13/11/2026</b> xuất hiện đợt mưa lớn diện rộng trên toàn tỉnh (Quốc Khánh 39,0 mm; Khánh Khê 23,6 mm; Khuất Xá 15,2 mm; Chi Lăng 26,0 mm ngày 12/11 và 14,1 mm ngày 13/11). Phải theo dõi sát bản tin NCHMF để điều chỉnh giờ tiếp cận hiện trường.
+  </div>
+</section>
+
+<section class="panel" style="margin-top:18px;overflow:auto">
+  <h2>Lịch trình tích hợp thời tiết & Đoàn công tác (Đi từ xa về gần: 10–13/11/2026)</h2>
+  <p style="margin:0 0 10px;font-size:13.5px;color:var(--muted)">
+    <b>Xuất phát:</b> 14h00 ngày 10/11/2026 từ Hà Nội · <b>Kết thúc quay về Hà Nội:</b> 14h00 ngày 13/11/2026
+  </p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>1. PGS.TS Nguyễn Đức Mạnh</span><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>2. TS. Nguyễn Công Định</span><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>3. TS. Nguyễn Hải Hà</span><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>4. PGS.TS Trần Quang Học</span><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>5. TS. Nguyễn Đăng Phóng</span><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>6. TS. Nguyễn Trung Kiên</span><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>7. KS. Nguyễn Thị Phương Thảo</span><span style='background:#e0f2fe;color:#0369a1;padding:5px 10px;border-radius:999px;font-weight:600;font-size:13px'>8. Mr. Đỗ Hồng Thanh</span></div>
+  <table>
+    <thead>
+      <tr><th>Thời gian</th><th>Điểm khảo sát</th><th>Lộ trình từ</th><th>Di chuyển</th><th>Mưa ngày KS</th><th>Mưa 3d trước</th><th>Đỉnh mưa đợt (10–13/11)</th><th>Trạng thái</th></tr>
+    </thead>
+    <tbody><tr><td><b>2026-11-11T09:00:00+07:00</b></td><td>Quốc Khánh (<code>LS-QK-01</code>)</td><td>Hà Nội</td><td>330 phút (240–250 km)</td><td>0.0 mm (13%)</td><td>10.2 mm</td><td>39.0 mm (2026-11-12)</td><td><span class='status' style='background:#15803d'>THEO DÕI</span></td></tr><tr><td><b>2026-11-11T15:00:00+07:00</b></td><td>Đồng Đăng (<code>LS-DD-02</code>)</td><td>Quốc Khánh</td><td>150 phút (70–80 km)</td><td>3.4 mm (25%)</td><td>8.7 mm</td><td>22.6 mm (2026-11-13)</td><td><span class='status' style='background:#15803d'>THEO DÕI</span></td></tr><tr><td><b>2026-11-12T09:00:00+07:00</b></td><td>Khánh Khê (<code>LS-KK-03</code>)</td><td>Đồng Đăng</td><td>45 phút (20–25 km)</td><td>23.6 mm (58%)</td><td>3.1 mm</td><td>23.6 mm (2026-11-12)</td><td><span class='status' style='background:#b45309'>HẠN CHẾ</span></td></tr><tr><td><b>2026-11-12T15:00:00+07:00</b></td><td>Khuất Xá (<code>LS-KX-04</code>)</td><td>Khánh Khê</td><td>150 phút (65–75 km)</td><td>11.8 mm (54%)</td><td>1.4 mm</td><td>11.8 mm (2026-11-12)</td><td><span class='status' style='background:#b45309'>HẠN CHẾ</span></td></tr><tr><td><b>2026-11-13T10:00:00+07:00</b></td><td>Chi Lăng (<code>LS-CL-05</code>)</td><td>Khuất Xá</td><td>150 phút (90–100 km)</td><td>8.8 mm (57%)</td><td>26.0 mm</td><td>26.0 mm (2026-11-12)</td><td><span class='status' style='background:#15803d'>THEO DÕI</span></td></tr></tbody>
+  </table>
+</section>
+
+<section class="panel" style="margin-top:18px;overflow:auto">
+  <h2>Ba địa bàn xung yếu bổ sung chưa có tọa độ (Phụ lục Công văn số 6666/SNNMT-TL)</h2>
+  <table>
+    <thead>
+      <tr><th>Mã</th><th>Xã</th><th>Vị trí</th><th>Số điểm</th><th>Số hộ</th><th>Nhân khẩu</th><th>Hiện trạng sụt trượt</th><th>Đề xuất xử lý</th><th>Trạng thái khẩn cấp</th></tr>
+    </thead>
+    <tbody><tr><td><code>LS-DH-06</code></td><td><b>Điềm He</b></td><td>Xóm Phai Duống, thôn Phù Huê</td><td><b>1</b></td><td>4</td><td>20</td><td>Sụt đất gây nứt nhà, nền, sân…</td><td>Đề xuất phương án sắp xếp ổn định dân cư ra khỏi vùng thiên tai.</td><td><span class='status' style='background:#b91c1c'>UBND tỉnh đã công bố tình huống khẩn cấp về thiên tai</span></td></tr><tr><td><code>LS-TB-07</code></td><td><b>Thái Bình</b></td><td>Thôn Hưng Thái, Bản Chu</td><td><b>2</b></td><td>8</td><td>24</td><td>Nguy cơ sạt, trượt; tại thôn Hưng Thái (3 hộ) đã triển khai xây kè</td><td>Kiểm tra, đánh giá hiện trạng sụt, trượt đất.</td><td><span class='status' style='background:#b91c1c'>Đã triển khai xây kè tại thôn Hưng Thái (3 hộ)</span></td></tr><tr><td><code>LS-NH-08</code></td><td><b>Nhất Hòa</b></td><td>Các thôn trên địa bàn</td><td><b>26</b></td><td>12</td><td>Chưa rõ</td><td>Nguy cơ xảy ra sạt lở đất, vết nứt (17 điểm giao thông)</td><td>Đề nghị hướng dẫn, hỗ trợ đánh giá mức độ nguy hiểm tại khu vực hộ dân có nguy cơ thiên tai và phương án xử lý phù hợp.</td><td><span class='status' style='background:#b91c1c'>Bao gồm 17 điểm giao thông và khu vực hộ dân có vết nứt</span></td></tr></tbody>
+  </table>
+</section>
+
+<section class="panel" style="margin-top:18px;overflow:auto" id="survey-logbook-section">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+    <h2 style="margin:0">Sổ Nhật Ký Khảo Sát & Bảng Tọa Độ Lưu (Tác tử <code>survey-logbook</code>)</h2>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="btn-toggle active" onclick="openNoteDialogForSite('LS-QK-01')">➕ Tạo Ghi chú cho Điểm Tọa độ</button>
+      <button type="button" class="btn-toggle" style="background:#15803d;color:#fff;border-color:#14532d" onclick="exportLogbookXlsx()">📊 Xuất Bảng Tọa độ & Nhật ký (.xlsx)</button>
+      <button type="button" class="btn-toggle" style="background:#1d4ed8;color:#fff;border-color:#1e3a8a" onclick="exportLogbookDocx()">📄 Xuất Sổ Nhật ký & Tọa độ (.docx)</button>
+      <a href="cong-cu-ghi-chu-toa-do.html" class="btn-toggle" style="text-decoration:none;display:inline-flex;align-items:center">🗺️ Mở Công cụ Định vị Chuyên sâu</a>
+    </div>
+  </div>
+  <p style="margin:0 0 10px;font-size:13.5px;color:var(--muted)">
+    Mỗi điểm khảo sát lưu tọa độ (WGS 84 & Độ-Phút-Giây DMS) hỗ trợ ghi nhiều mục nhật ký hiện trường theo thời gian và xuất đồng bộ cùng bảng tọa độ đã kiểm định vật lý.
+  </p>
+  <h3 style="font-size:15px;color:#16324f;margin:10px 0 6px">1. Bảng Tọa Độ Lưu Các Điểm Định Vị (Master Coordinate Table)</h3>
+  <table>
+    <thead>
+      <tr><th>Mã ĐV</th><th>Mã Điểm</th><th>Xã / Vị trí</th><th>Vĩ độ WGS 84 (°B)</th><th>Kinh độ WGS 84 (°Đ)</th><th>Tọa độ DMS</th><th>Cao độ (m)</th><th>Số Mục NK</th><th>Trạng thái QA</th><th>Thao tác</th></tr>
+    </thead>
+    <tbody id="master-coord-tbody"></tbody>
+  </table>
+  <h3 style="font-size:15px;color:#16324f;margin:16px 0 6px">2. Nhật Ký Khảo Sát Chi Tiết Gắn Với Từng Điểm Tọa Độ</h3>
+  <table>
+    <thead>
+      <tr><th>Mã Mục NK</th><th>Điểm Tọa độ / Xã</th><th>Tọa độ Ghi chú (WGS 84 & DMS)</th><th>Thời gian & Người ghi</th><th>Hạng mục</th><th>Tiêu đề & Nội dung Nhật ký</th><th>Kiến nghị / Hành động</th></tr>
+    </thead>
+    <tbody id="chronological-log-tbody"></tbody>
+  </table>
+</section>
+
+<dialog id="logbook-dialog" closedby="any" aria-labelledby="logbook-dialog-title" style="border:1px solid #cbd5e1;border-radius:12px;padding:20px;max-width:640px;width:94%;box-shadow:0 20px 40px rgba(15,23,42,0.25)">
+  <h2 id="logbook-dialog-title" style="margin-top:0">Tạo Ghi Chú Nhật Ký Khảo Sát Cho Điểm Lưu Tọa Độ</h2>
+  <form id="logbook-modal-form" method="dialog" style="display:grid;gap:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label for="dlg-site-id" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Chọn Điểm Lưu Tọa Độ *</label>
+        <select id="dlg-site-id" required style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit"></select>
+      </div>
+      <div>
+        <label for="dlg-category" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Hạng mục Chuyên môn *</label>
+        <select id="dlg-category" required style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit">
+          <option value="Địa chất & Địa tầng">Địa chất & Địa tầng</option>
+          <option value="Mái dốc & Vết nứt">Mái dốc & Vết nứt</option>
+          <option value="Thủy văn & Nước ngầm">Thủy văn & Nước ngầm</option>
+          <option value="Dân sinh & Công trình">Dân sinh & Công trình</option>
+          <option value="Kiến nghị hiện trường">Kiến nghị hiện trường</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div>
+        <label for="dlg-lat" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Vĩ độ (°B)</label>
+        <input id="dlg-lat" type="text" inputmode="decimal" placeholder="21.0 - 23.0" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit">
+      </div>
+      <div>
+        <label for="dlg-lon" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Kinh độ (°Đ)</label>
+        <input id="dlg-lon" type="text" inputmode="decimal" placeholder="105.5 - 108.5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit">
+      </div>
+      <div>
+        <label for="dlg-elev" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Cao độ (m)</label>
+        <input id="dlg-elev" type="text" inputmode="decimal" placeholder="0 - 2500" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label for="dlg-title" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Tiêu đề Ghi chú Nhật ký *</label>
+        <input id="dlg-title" type="text" required placeholder="VD: Khảo sát vết nứt đỉnh taluy" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit">
+      </div>
+      <div>
+        <label for="dlg-author" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Người ghi chú *</label>
+        <input id="dlg-author" type="text" required value="Đoàn khảo sát bước 1" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit">
+      </div>
+    </div>
+    <div>
+      <label for="dlg-content" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Nội dung Nhật ký Quan trắc Chi tiết *</label>
+      <textarea id="dlg-content" rows="3" required placeholder="Mô tả chi tiết địa chất, bề rộng/chiều dài vết nứt, thấm nước, khoảng cách nhà dân..." style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit"></textarea>
+    </div>
+    <div>
+      <label for="dlg-action" style="display:block;font-weight:600;font-size:13px;margin-bottom:3px">Kiến nghị / Hành động Tiếp theo</label>
+      <input id="dlg-action" type="text" placeholder="VD: Cắm mốc quan trắc dịch chuyển, khoan thăm dò..." style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font:inherit">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px">
+      <button type="button" class="btn-toggle" onclick="document.getElementById('logbook-dialog').close('cancel')">Đóng</button>
+      <button type="submit" value="save" class="btn-toggle active">💾 Lưu vào Nhật ký & Bảng tọa độ</button>
+    </div>
+  </form>
+</dialog>
+
+<section class="panel" style="margin-top:18px;overflow:auto">
+  <h2>Vùng Cách Ly Dữ Liệu (Quarantine Zone) & Kiểm Định Ràng Buộc Logic Vật Lý</h2>
+  <table>
+    <thead>
+      <tr><th>Mã cách ly</th><th>Phân hệ</th><th>Bản ghi</th><th>Mức độ</th><th>Nguyên nhân kỹ thuật / Vật lý</th><th>Hành động xử lý bắt buộc</th></tr>
+    </thead>
+    <tbody><tr><td><code>QRT-001</code></td><td>pdf_xls_reconciliation</td><td><b>LS-KX-04</b></td><td><span class='status' style='background:#b45309'>quarantined_conflict</span></td><td>Mâu thuẫn nhân khẩu: PDF ghi 80, Excel để trống.</td><td>Không tự ý gộp hay xóa giá trị mâu thuẫn; xác minh trực tiếp với UBND xã Khuất Xá trong đợt khảo sát.</td></tr><tr><td><code>QRT-002</code></td><td>pdf_xls_reconciliation</td><td><b>LS-CL-05</b></td><td><span class='status' style='background:#b45309'>quarantined_conflict</span></td><td>Mâu thuẫn số hộ/nhân khẩu: Excel ghi 23/80, PDF hiển thị dấu gạch.</td><td>Không tự ý gộp hay xóa giá trị mâu thuẫn; xác minh trực tiếp với UBND xã Chi Lăng trong đợt khảo sát.</td></tr><tr><td><code>QRT-003</code></td><td>additional_vulnerable_sites</td><td><b>LS-DH-06</b></td><td><span class='status' style='background:#b45309'>quarantined_conflict</span></td><td>Xã Điềm He (1 điểm sạt lở, 4 hộ) có trong Công văn 6666/SNNMT-TL (Excel) nhưng chưa có tọa độ WGS 84.</td><td>Yêu cầu địa phương cung cấp tọa độ GPS từng điểm để đưa vào bản đồ cảnh báo.</td></tr><tr><td><code>QRT-004</code></td><td>additional_vulnerable_sites</td><td><b>LS-TB-07</b></td><td><span class='status' style='background:#b45309'>quarantined_conflict</span></td><td>Xã Thái Bình (2 điểm sạt lở, 8 hộ) có trong Công văn 6666/SNNMT-TL (Excel) nhưng chưa có tọa độ WGS 84.</td><td>Yêu cầu địa phương cung cấp tọa độ GPS từng điểm để đưa vào bản đồ cảnh báo.</td></tr><tr><td><code>QRT-005</code></td><td>additional_vulnerable_sites</td><td><b>LS-NH-08</b></td><td><span class='status' style='background:#b45309'>quarantined_conflict</span></td><td>Xã Nhất Hòa (26 điểm sạt lở, 12 hộ) có trong Công văn 6666/SNNMT-TL (Excel) nhưng chưa có tọa độ WGS 84.</td><td>Yêu cầu địa phương cung cấp tọa độ GPS từng điểm để đưa vào bản đồ cảnh báo.</td></tr><tr><td><code>QRT-006</code></td><td>field_photo_manifest</td><td><b>PHOTO-ROW-2</b></td><td><span class='status' style='background:#0369a1'>screening_caution</span></td><td>Dòng biểu mẫu chờ trong field_photo_manifest.csv chưa có khóa chính photo_id và observation_id.</td><td>Điền photo_id, observation_id, tọa độ, phương vị và SHA-256 sau khi chụp ảnh hiện trường.</td></tr><tr><td><code>QRT-007</code></td><td>terrain_srtm30</td><td><b>LS-DD-02</b></td><td><span class='status' style='background:#0369a1'>screening_caution</span></td><td>Độ dốc trung bình SRTM30m cách tâm 60 m tại Đồng Đăng chỉ đạt 3.7° (cực đại hướng 4.8°) do hiệu ứng làm phẳng của lưới DEM 30 m ở chân sườn/thung lũng; hiện trường thực tế có &#x27;Ảnh hưởng sạt lở đất&#x27; nên tuyệt đối không coi dốc SRTM thấp là mái dốc ổn định.</td><td>Đo trực tiếp chiều cao và góc dốc taluy/vách đá tại hiện trường bằng thước dây/laser và địa bàn.</td></tr><tr><td><code>QRT-008</code></td><td>terrain_srtm30</td><td><b>LS-KX-04</b></td><td><span class='status' style='background:#0369a1'>screening_caution</span></td><td>Độ dốc trung bình SRTM30m cách tâm 60 m tại Khuất Xá chỉ đạt 1.4° (cực đại hướng 2.9°) do hiệu ứng làm phẳng của lưới DEM 30 m ở chân sườn/thung lũng; hiện trường thực tế có &#x27;Sạt lở đất; 11 hộ cũ và 14 hộ phát sinh&#x27; nên tuyệt đối không coi dốc SRTM thấp là mái dốc ổn định.</td><td>Đo trực tiếp chiều cao và góc dốc taluy/vách đá tại hiện trường bằng thước dây/laser và địa bàn.</td></tr><tr><td><code>QRT-009</code></td><td>terrain_srtm30</td><td><b>LS-CL-05</b></td><td><span class='status' style='background:#0369a1'>screening_caution</span></td><td>Độ dốc trung bình SRTM30m cách tâm 60 m tại Chi Lăng chỉ đạt 1.5° (cực đại hướng 2.9°) do hiệu ứng làm phẳng của lưới DEM 30 m ở chân sườn/thung lũng; hiện trường thực tế có &#x27;Tiềm ẩn sạt lở khối đá&#x27; nên tuyệt đối không coi dốc SRTM thấp là mái dốc ổn định.</td><td>Đo trực tiếp chiều cao và góc dốc taluy/vách đá tại hiện trường bằng thước dây/laser và địa bàn.</td></tr></tbody>
+  </table>
+</section>
+
+<section class="panel" style="margin-top:18px;overflow:auto">
+  <h2>Thu nhận ảnh Sentinel xem nhanh</h2>
+  <table>
+    <thead><tr><th>Bộ sưu tập</th><th>Cảnh ưu tiên</th><th>Điểm bao phủ (BBox)</th><th>Trạng thái</th><th>Tệp/ghi chú</th></tr></thead>
+    <tbody><tr><td>sentinel-2-l2a</td><td><code>S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005</code></td><td>LS-QK-01, LS-DD-02, LS-KK-03</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg</code></td></tr><tr><td>sentinel-2-l2a</td><td><code>S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606</code></td><td>LS-QK-01, LS-DD-02, LS-KK-03</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg</code></td></tr><tr><td>sentinel-2-l2a</td><td><code>S2B_MSIL2A_20261009T032629_N0513_R018_T48QXK_20261009T071321</code></td><td>LS-QK-01, LS-DD-02, LS-KK-03</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20261009T032629_N0513_R018_T48QXK_20261009T071321.jpg</code></td></tr><tr><td>sentinel-2-l2a</td><td><code>S2C_MSIL2A_20261001T031531_N0513_R118_T48QYK_20261001T081705</code></td><td>LS-KX-04</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261001T031531_N0513_R118_T48QYK_20261001T081705.jpg</code></td></tr><tr><td>sentinel-2-l2a</td><td><code>S2C_MSIL2A_20261011T031641_N0513_R118_T48QYK_20261011T080703</code></td><td>LS-KX-04</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261011T031641_N0513_R118_T48QYK_20261011T080703.jpg</code></td></tr><tr><td>sentinel-2-l2a</td><td><code>S2B_MSIL2A_20260929T032539_N0513_R018_T48QXJ_20260929T071432</code></td><td>LS-CL-05</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20260929T032539_N0513_R018_T48QXJ_20260929T071432.jpg</code></td></tr><tr><td>sentinel-2-l2a</td><td><code>S2C_MSIL2A_20261014T032711_N0513_R018_T48QXJ_20261014T082606</code></td><td>LS-CL-05</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXJ_20261014T082606.jpg</code></td></tr><tr><td>sentinel-1-grd</td><td><code>S1D_IW_GRDH_1SDV_20261030T110537_20261030T110602_005244_009F69_E191_COG</code></td><td>LS-KK-03, LS-CL-05</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S1D_IW_GRDH_1SDV_20261030T110537_20261030T110602_005244_009F69_E191_COG.png</code></td></tr><tr><td>sentinel-1-grd</td><td><code>S1D_IW_GRDH_1SDV_20261027T225018_20261027T225043_005207_009E2C_325B_COG</code></td><td>LS-KK-03, LS-KX-04, LS-CL-05</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S1D_IW_GRDH_1SDV_20261027T225018_20261027T225043_005207_009E2C_325B_COG.png</code></td></tr><tr><td>sentinel-1-grd</td><td><code>S1D_IW_GRDH_1SDV_20261027T224948_20261027T225018_005207_009E2C_167C_COG</code></td><td>LS-QK-01, LS-DD-02, LS-KK-03, LS-KX-04, LS-CL-05</td><td>Sẵn sàng</td><td><code>langson_agent_system/outputs/current/quicklooks/S1D_IW_GRDH_1SDV_20261027T224948_20261027T225018_005207_009E2C_167C_COG.png</code></td></tr></tbody>
+  </table>
+</section>
+
+<section class="panel" style="margin-top:18px">
+  <h2>Thư viện quicklook theo vùng phủ điểm</h2>
+  <div class="gallery"><figure><img src="langson_agent_system/outputs/current/quicklooks/S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg" alt="Quicklook sentinel-2-l2a"><figcaption><b>sentinel-2-l2a · mây 2.4%</b><br>Điểm phủ: <b>LS-QK-01, LS-DD-02, LS-KK-03</b><br><small>LS-QK-01:baseline, LS-DD-02:baseline, LS-KK-03:baseline</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg" alt="Quicklook sentinel-2-l2a"><figcaption><b>sentinel-2-l2a · mây 26.81%</b><br>Điểm phủ: <b>LS-QK-01, LS-DD-02, LS-KK-03</b><br><small>LS-QK-01:target, LS-DD-02:target, LS-KK-03:target</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20261009T032629_N0513_R018_T48QXK_20261009T071321.jpg" alt="Quicklook sentinel-2-l2a"><figcaption><b>sentinel-2-l2a · mây 0.19%</b><br>Điểm phủ: <b>LS-QK-01, LS-DD-02, LS-KK-03</b><br><small>LS-QK-01:best_clear_scene, LS-DD-02:best_clear_scene, LS-KK-03:best_clear_scene</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261001T031531_N0513_R118_T48QYK_20261001T081705.jpg" alt="Quicklook sentinel-2-l2a"><figcaption><b>sentinel-2-l2a · mây 9.35%</b><br>Điểm phủ: <b>LS-KX-04</b><br><small>LS-KX-04:baseline</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261011T031641_N0513_R118_T48QYK_20261011T080703.jpg" alt="Quicklook sentinel-2-l2a"><figcaption><b>sentinel-2-l2a · mây 0.82%</b><br>Điểm phủ: <b>LS-KX-04</b><br><small>LS-KX-04:target, LS-KX-04:best_clear_scene</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20260929T032539_N0513_R018_T48QXJ_20260929T071432.jpg" alt="Quicklook sentinel-2-l2a"><figcaption><b>sentinel-2-l2a · mây 25.83%</b><br>Điểm phủ: <b>LS-CL-05</b><br><small>LS-CL-05:baseline</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXJ_20261014T082606.jpg" alt="Quicklook sentinel-2-l2a"><figcaption><b>sentinel-2-l2a · mây 20.79%</b><br>Điểm phủ: <b>LS-CL-05</b><br><small>LS-CL-05:target, LS-CL-05:best_clear_scene</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S1D_IW_GRDH_1SDV_20261030T110537_20261030T110602_005244_009F69_E191_COG.png" alt="Quicklook sentinel-1-grd"><figcaption><b>sentinel-1-grd</b><br>Điểm phủ: <b>LS-KK-03, LS-CL-05</b><br><small>radar_sar_context</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S1D_IW_GRDH_1SDV_20261027T225018_20261027T225043_005207_009E2C_325B_COG.png" alt="Quicklook sentinel-1-grd"><figcaption><b>sentinel-1-grd</b><br>Điểm phủ: <b>LS-KK-03, LS-KX-04, LS-CL-05</b><br><small>radar_sar_context</small></figcaption></figure><figure><img src="langson_agent_system/outputs/current/quicklooks/S1D_IW_GRDH_1SDV_20261027T224948_20261027T225018_005207_009E2C_167C_COG.png" alt="Quicklook sentinel-1-grd"><figcaption><b>sentinel-1-grd</b><br>Điểm phủ: <b>LS-QK-01, LS-DD-02, LS-KK-03, LS-KX-04, LS-CL-05</b><br><small>radar_sar_context</small></figcaption></figure></div>
+</section>
+
+<section class="panel" style="margin-top:18px;overflow:auto">
+  <h2>Cặp ảnh Sentinel-2 phục vụ rà soát biến động</h2>
+  <table>
+    <thead><tr><th>Điểm</th><th>Ô MGRS</th><th>Ảnh nền (Baseline)</th><th>Ảnh mục tiêu (Target)</th><th>Khoảng cách</th><th>Ảnh sạch mây nhất</th><th>Chất lượng</th></tr></thead>
+    <tbody><tr><td><b>LS-QK-01</b></td><td><code>MGRS-48QXK</code></td><td>2026-10-06 (mây 2.4%)</td><td>2026-10-14 (mây 26.81%)</td><td>7 ngày</td><td>2026-10-09 (mây 0.19%)</td><td>short_interval_caution</td></tr><tr><td><b>LS-DD-02</b></td><td><code>MGRS-48QXK</code></td><td>2026-10-06 (mây 2.4%)</td><td>2026-10-14 (mây 26.81%)</td><td>7 ngày</td><td>2026-10-09 (mây 0.19%)</td><td>short_interval_caution</td></tr><tr><td><b>LS-KK-03</b></td><td><code>MGRS-48QXK</code></td><td>2026-10-06 (mây 2.4%)</td><td>2026-10-14 (mây 26.81%)</td><td>7 ngày</td><td>2026-10-09 (mây 0.19%)</td><td>short_interval_caution</td></tr><tr><td><b>LS-KX-04</b></td><td><code>MGRS-48QYK</code></td><td>2026-10-01 (mây 9.35%)</td><td>2026-10-11 (mây 0.82%)</td><td>10 ngày</td><td>2026-10-11 (mây 0.82%)</td><td>acceptable_interval</td></tr><tr><td><b>LS-CL-05</b></td><td><code>MGRS-48QXJ</code></td><td>2026-09-29 (mây 25.83%)</td><td>2026-10-14 (mây 20.79%)</td><td>15 ngày</td><td>2026-10-14 (mây 20.79%)</td><td>preferred_interval</td></tr></tbody>
+  </table>
+  <div class="notice"><b>Giới hạn:</b> Đây là cặp quicklook cùng ô để rà soát trực quan. Chưa được dùng để kết luận biến dạng hoặc diện tích trượt nếu chưa đăng ký ảnh và xử lý pixel gốc.</div>
+</section>
+
+<section class="panel" style="margin-top:18px">
+  <h2>So sánh trực quan nền–mục tiêu</h2>
+  <div style="display:grid;gap:16px"><article style="border:1px solid var(--line);border-radius:10px;padding:14px"><h3 style="margin-top:0">LS-QK-01 (Quốc Khánh) · MGRS-48QXK · Khoảng cách 7 ngày</h3><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg" alt="Ảnh nền LS-QK-01" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Nền (2026-10-06)</b> · mây 2.4% · no-data 8.305122%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg" alt="Ảnh mục tiêu LS-QK-01" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Mục tiêu (2026-10-14)</b> · mây 26.81% · no-data 8.499435%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20261009T032629_N0513_R018_T48QXK_20261009T071321.jpg" alt="Ảnh ít mây nhất LS-QK-01" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Ảnh sạch mây nhất (2026-10-09)</b> · mây 0.19% · no-data 7.991029%</figcaption></figure></div><p style="margin:8px 0 0;font-size:13px;color:var(--muted)"><b>short_interval_caution</b> · Chỉ rà soát trực quan quicklook cấp ô MGRS; chưa kết luận biến dạng mái dốc nếu chưa xử lý ảnh gốc 10 m.</p></article><article style="border:1px solid var(--line);border-radius:10px;padding:14px"><h3 style="margin-top:0">LS-DD-02 (Đồng Đăng) · MGRS-48QXK · Khoảng cách 7 ngày</h3><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg" alt="Ảnh nền LS-DD-02" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Nền (2026-10-06)</b> · mây 2.4% · no-data 8.305122%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg" alt="Ảnh mục tiêu LS-DD-02" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Mục tiêu (2026-10-14)</b> · mây 26.81% · no-data 8.499435%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20261009T032629_N0513_R018_T48QXK_20261009T071321.jpg" alt="Ảnh ít mây nhất LS-DD-02" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Ảnh sạch mây nhất (2026-10-09)</b> · mây 0.19% · no-data 7.991029%</figcaption></figure></div><p style="margin:8px 0 0;font-size:13px;color:var(--muted)"><b>short_interval_caution</b> · Chỉ rà soát trực quan quicklook cấp ô MGRS; chưa kết luận biến dạng mái dốc nếu chưa xử lý ảnh gốc 10 m.</p></article><article style="border:1px solid var(--line);border-radius:10px;padding:14px"><h3 style="margin-top:0">LS-KK-03 (Khánh Khê) · MGRS-48QXK · Khoảng cách 7 ngày</h3><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2A_MSIL2A_20261006T033151_N0513_R018_T48QXK_20261006T071005.jpg" alt="Ảnh nền LS-KK-03" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Nền (2026-10-06)</b> · mây 2.4% · no-data 8.305122%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXK_20261014T082606.jpg" alt="Ảnh mục tiêu LS-KK-03" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Mục tiêu (2026-10-14)</b> · mây 26.81% · no-data 8.499435%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20261009T032629_N0513_R018_T48QXK_20261009T071321.jpg" alt="Ảnh ít mây nhất LS-KK-03" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Ảnh sạch mây nhất (2026-10-09)</b> · mây 0.19% · no-data 7.991029%</figcaption></figure></div><p style="margin:8px 0 0;font-size:13px;color:var(--muted)"><b>short_interval_caution</b> · Chỉ rà soát trực quan quicklook cấp ô MGRS; chưa kết luận biến dạng mái dốc nếu chưa xử lý ảnh gốc 10 m.</p></article><article style="border:1px solid var(--line);border-radius:10px;padding:14px"><h3 style="margin-top:0">LS-KX-04 (Khuất Xá) · MGRS-48QYK · Khoảng cách 10 ngày</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261001T031531_N0513_R118_T48QYK_20261001T081705.jpg" alt="Ảnh nền LS-KX-04" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Nền (2026-10-01)</b> · mây 9.35% · no-data 0.0%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261011T031641_N0513_R118_T48QYK_20261011T080703.jpg" alt="Ảnh mục tiêu LS-KX-04" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Mục tiêu (2026-10-11)</b> · mây 0.82% · no-data 0.0%</figcaption></figure></div><p style="margin:8px 0 0;font-size:13px;color:var(--muted)"><b>acceptable_interval</b> · Chỉ rà soát trực quan quicklook cấp ô MGRS; chưa kết luận biến dạng mái dốc nếu chưa xử lý ảnh gốc 10 m.</p></article><article style="border:1px solid var(--line);border-radius:10px;padding:14px"><h3 style="margin-top:0">LS-CL-05 (Chi Lăng) · MGRS-48QXJ · Khoảng cách 15 ngày</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2B_MSIL2A_20260929T032539_N0513_R018_T48QXJ_20260929T071432.jpg" alt="Ảnh nền LS-CL-05" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Nền (2026-09-29)</b> · mây 25.83% · no-data 28.35055%</figcaption></figure><figure style="margin:0"><img src="langson_agent_system/outputs/current/quicklooks/S2C_MSIL2A_20261014T032711_N0513_R018_T48QXJ_20261014T082606.jpg" alt="Ảnh mục tiêu LS-CL-05" style="width:100%;height:240px;object-fit:contain;background:#0f172a;border-radius:8px"><figcaption><b>Mục tiêu (2026-10-14)</b> · mây 20.79% · no-data 28.8248%</figcaption></figure></div><p style="margin:8px 0 0;font-size:13px;color:var(--muted)"><b>preferred_interval</b> · Chỉ rà soát trực quan quicklook cấp ô MGRS; chưa kết luận biến dạng mái dốc nếu chưa xử lý ảnh gốc 10 m.</p></article></div>
+</section>
+</main>
+<footer>
+  Nguồn nội bộ: Lịch trình Excel (kèm Công văn 6666/SNNMT-TL ngày 31/10/2026), Danh sách điểm PDF và Bản đồ Địa chất Lạng Sơn (1:300.000 & 1:200.000). Cao độ/độ dốc: OpenTopoData–SRTM30. Đường/thủy hệ: © OpenStreetMap contributors, ODbL. Các khoảng cách chỉ dùng sàng lọc; dự báo phải được xác nhận lại bằng bản tin NCHMF.
+</footer>
+<script>
+function toggleLayer(layerId, btn) {
+  var el = document.getElementById(layerId);
+  if (!el) return;
+  var hidden = el.style.display === 'none';
+  el.style.display = hidden ? '' : 'none';
+  btn.classList.toggle('active', hidden);
+}
+function selectSiteCard(siteId) {
+  document.querySelectorAll('.site-card').forEach(function(c) { c.classList.remove('highlight'); });
+  var target = document.getElementById('card-' + siteId);
+  if (target) {
+    target.classList.add('highlight');
+    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+var LOGBOOK_STORAGE_KEY = 'langson_geosurvey_waypoints_v1';
+var EMBEDDED_WAYPOINTS = [{"waypoint_id": "WP-001", "site_id": "LS-QK-01", "name": "Điểm định vị Quốc Khánh (LS-QK-01)", "commune": "Quốc Khánh", "location_detail": "Khu vực Tàng Chang, thôn Phi Mỹ (Cốc Mười cũ)", "latitude": 22.357778, "longitude": 106.524722, "dms_text": "22°21'28\"B, 106°31'29\"Đ", "elevation_m": 338.0, "gps_accuracy_m": null, "planned_latitude": 22.357778, "planned_longitude": 106.524722, "coordinate_drift_m": 0.0, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Đới tiếp xúc giữa Hệ tầng Nà Quản / Sông Hiến và khối đá vôi, gần đứt gãy phương TB–ĐN; nguy cơ sạt lở sườn kết hợp sụt lún karst.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Tiềm ẩn sạt lở, sụt lún", "field_notes": "Điểm định vị khảo sát sạt lở tại Khu vực Tàng Chang, thôn Phi Mỹ (Cốc Mười cũ) (Quốc Khánh). Quy mô: 1 điểm, 93 hộ dân. Ký hiệu bản đồ: Trái tim.", "engineering_proposal": "Nghiên cứu khu tái định cư tập trung tại thôn Long Thịnh, diện tích 6,7 ha; dự kiến khoảng 46,6 tỷ đồng.", "observer": "Đoàn khảo sát bước 1 (8 chuyên gia)", "observed_at": "2026-11-11T09:00:00+07:00", "photo_ids": "", "qa_status": "pending", "plausibility_ok": true, "quarantine_reasons": [], "log_entries": [{"entry_id": "WP-001-NOTE-01", "waypoint_id": "WP-001", "site_id": "LS-QK-01", "recorded_at": "2026-11-11T09:00:00+07:00", "author": "Tác tử Dữ liệu & Đoàn khảo sát bước 1", "category": "Định vị mốc & Hiện trạng", "title": "Ghi nhận mốc tọa độ quy hoạch và hiện trạng Quốc Khánh", "content": "Điểm định vị khảo sát sạt lở tại Khu vực Tàng Chang, thôn Phi Mỹ (Cốc Mười cũ) (Quốc Khánh). Quy mô: 1 điểm, 93 hộ dân. Ký hiệu bản đồ: Trái tim.", "sub_latitude": 22.357778, "sub_longitude": 106.524722, "sub_dms_text": "22°21'28\"B, 106°31'29\"Đ", "weather_note": "", "action_required": "Nghiên cứu khu tái định cư tập trung tại thôn Long Thịnh, diện tích 6,7 ha; dự kiến khoảng 46,6 tỷ đồng.", "plausibility_ok": true, "quarantine_reason": ""}, {"entry_id": "WP-001-NOTE-02", "waypoint_id": "WP-001", "site_id": "LS-QK-01", "recorded_at": "2026-11-11T09:00:00+07:00", "author": "Tác tử Địa chất (geology-raster)", "category": "Địa chất & Địa tầng", "title": "Đối chiếu cấu trúc địa chất 1:200.000 tại Quốc Khánh", "content": "Đới tiếp xúc giữa Hệ tầng Nà Quản / Sông Hiến và khối đá vôi, gần đứt gãy phương TB–ĐN; nguy cơ sạt lở sườn kết hợp sụt lún karst.", "sub_latitude": 22.357778, "sub_longitude": 106.524722, "sub_dms_text": "22°21'28\"B, 106°31'29\"Đ", "weather_note": "", "action_required": "Đo thế nằm đá gốc, bề dày vỏ phong hóa và xác nhận mặt trượt ngoài thực địa.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": 59.9, "priority_level": "Cao", "field_status": "THEO DÕI", "srtm_elevation_m": 338.0, "srtm_slope_deg": 6.2, "srtm_max_local_slope_deg": 11.3, "srtm_aspect_deg": 57.5, "interpreted_formation": "Hệ tầng Nà Quản", "formation_symbol": "D1-2 nq", "nearest_fault_m": 3430.6, "nearest_road_m": 5.1, "nearest_waterway_m": null, "survey_day_rain_mm": 0.0, "antecedent_3d_rain_mm": 10.2, "historical_90d_rain_mm": 672.9}, "updated_at": "2026-11-11T10:26:32+07:00"}, {"waypoint_id": "WP-002", "site_id": "LS-DD-02", "name": "Điểm định vị Đồng Đăng (LS-DD-02)", "commune": "Đồng Đăng", "location_detail": "Các thôn Tam Lung, Nhất Tâm, Phú Lộc", "latitude": 21.950833, "longitude": 106.698056, "dms_text": "21°57'03\"B, 106°41'53\"Đ", "elevation_m": 253.0, "gps_accuracy_m": null, "planned_latitude": 21.950833, "planned_longitude": 106.698056, "coordinate_drift_m": 0.0, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Nằm trong đới đứt gãy Cao Bằng – Tiên Yên cắt qua các trầm tích lục nguyên – phun trào Trias (Hệ tầng Khôn Làng T2a kl) và đá vôi Bắc Sơn (C-P bs); vỏ phong hóa dày dễ trượt khi mưa lớn.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Ảnh hưởng sạt lở đất", "field_notes": "Điểm định vị khảo sát sạt lở tại Các thôn Tam Lung, Nhất Tâm, Phú Lộc (Đồng Đăng). Quy mô: 3 điểm, 56 hộ dân. Ký hiệu bản đồ: Sao vàng (2 điểm đánh dấu trên bản đồ PDF).", "engineering_proposal": "Đánh giá mức độ nguy hiểm, khuyến cáo người dân và tham mưu hỗ trợ kinh phí.", "observer": "Đoàn khảo sát bước 1 (8 chuyên gia)", "observed_at": "2026-11-11T15:00:00+07:00", "photo_ids": "", "qa_status": "pending", "plausibility_ok": true, "quarantine_reasons": [], "log_entries": [{"entry_id": "WP-002-NOTE-01", "waypoint_id": "WP-002", "site_id": "LS-DD-02", "recorded_at": "2026-11-11T15:00:00+07:00", "author": "Tác tử Dữ liệu & Đoàn khảo sát bước 1", "category": "Định vị mốc & Hiện trạng", "title": "Ghi nhận mốc tọa độ quy hoạch và hiện trạng Đồng Đăng", "content": "Điểm định vị khảo sát sạt lở tại Các thôn Tam Lung, Nhất Tâm, Phú Lộc (Đồng Đăng). Quy mô: 3 điểm, 56 hộ dân. Ký hiệu bản đồ: Sao vàng (2 điểm đánh dấu trên bản đồ PDF).", "sub_latitude": 21.950833, "sub_longitude": 106.698056, "sub_dms_text": "21°57'03\"B, 106°41'53\"Đ", "weather_note": "", "action_required": "Đánh giá mức độ nguy hiểm, khuyến cáo người dân và tham mưu hỗ trợ kinh phí.", "plausibility_ok": true, "quarantine_reason": ""}, {"entry_id": "WP-002-NOTE-02", "waypoint_id": "WP-002", "site_id": "LS-DD-02", "recorded_at": "2026-11-11T15:00:00+07:00", "author": "Tác tử Địa chất (geology-raster)", "category": "Địa chất & Địa tầng", "title": "Đối chiếu cấu trúc địa chất 1:200.000 tại Đồng Đăng", "content": "Nằm trong đới đứt gãy Cao Bằng – Tiên Yên cắt qua các trầm tích lục nguyên – phun trào Trias (Hệ tầng Khôn Làng T2a kl) và đá vôi Bắc Sơn (C-P bs); vỏ phong hóa dày dễ trượt khi mưa lớn.", "sub_latitude": 21.950833, "sub_longitude": 106.698056, "sub_dms_text": "21°57'03\"B, 106°41'53\"Đ", "weather_note": "", "action_required": "Đo thế nằm đá gốc, bề dày vỏ phong hóa và xác nhận mặt trượt ngoài thực địa.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": 53.7, "priority_level": "Trung bình", "field_status": "THEO DÕI", "srtm_elevation_m": 253.0, "srtm_slope_deg": 3.7, "srtm_max_local_slope_deg": 4.8, "srtm_aspect_deg": 129.8, "interpreted_formation": "Hệ tầng Khôn Làng", "formation_symbol": "T2a kl", "nearest_fault_m": 69.4, "nearest_road_m": 7.0, "nearest_waterway_m": 202.6, "survey_day_rain_mm": 3.4, "antecedent_3d_rain_mm": 8.7, "historical_90d_rain_mm": 603.0}, "updated_at": "2026-11-11T10:26:32+07:00"}, {"waypoint_id": "WP-003", "site_id": "LS-KK-03", "name": "Điểm định vị Khánh Khê (LS-KK-03)", "commune": "Khánh Khê", "location_detail": "Thôn Khuổi Mạ", "latitude": 21.868333, "longitude": 106.645, "dms_text": "21°52'06\"B, 106°38'42\"Đ", "elevation_m": 351.0, "gps_accuracy_m": null, "planned_latitude": 21.868333, "planned_longitude": 106.645, "coordinate_drift_m": 0.0, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Trầm tích lục nguyên xen cát bột kết, đá phiến sét Hệ tầng Khôn Làng (T2a kl), địa hình phân cắt mạnh (độ dốc SRTM ~16,6°), dễ phát sinh trượt đất tầng nông và trung bình.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Nguy cơ ảnh hưởng do sạt lở đất", "field_notes": "Điểm định vị khảo sát sạt lở tại Thôn Khuổi Mạ (Khánh Khê). Quy mô: 1 điểm, 21 hộ dân. Ký hiệu bản đồ: Ruy băng xanh ngọc.", "engineering_proposal": "Bố trí vốn xây dựng khu tái định cư, hỗ trợ di dời và hoàn thiện thủ tục đất đai, đầu tư.", "observer": "Đoàn khảo sát bước 1 (8 chuyên gia)", "observed_at": "2026-11-12T09:00:00+07:00", "photo_ids": "", "qa_status": "pending", "plausibility_ok": true, "quarantine_reasons": [], "log_entries": [{"entry_id": "WP-003-NOTE-01", "waypoint_id": "WP-003", "site_id": "LS-KK-03", "recorded_at": "2026-11-12T09:00:00+07:00", "author": "Tác tử Dữ liệu & Đoàn khảo sát bước 1", "category": "Định vị mốc & Hiện trạng", "title": "Ghi nhận mốc tọa độ quy hoạch và hiện trạng Khánh Khê", "content": "Điểm định vị khảo sát sạt lở tại Thôn Khuổi Mạ (Khánh Khê). Quy mô: 1 điểm, 21 hộ dân. Ký hiệu bản đồ: Ruy băng xanh ngọc.", "sub_latitude": 21.868333, "sub_longitude": 106.645, "sub_dms_text": "21°52'06\"B, 106°38'42\"Đ", "weather_note": "", "action_required": "Bố trí vốn xây dựng khu tái định cư, hỗ trợ di dời và hoàn thiện thủ tục đất đai, đầu tư.", "plausibility_ok": true, "quarantine_reason": ""}, {"entry_id": "WP-003-NOTE-02", "waypoint_id": "WP-003", "site_id": "LS-KK-03", "recorded_at": "2026-11-12T09:00:00+07:00", "author": "Tác tử Địa chất (geology-raster)", "category": "Địa chất & Địa tầng", "title": "Đối chiếu cấu trúc địa chất 1:200.000 tại Khánh Khê", "content": "Trầm tích lục nguyên xen cát bột kết, đá phiến sét Hệ tầng Khôn Làng (T2a kl), địa hình phân cắt mạnh (độ dốc SRTM ~16,6°), dễ phát sinh trượt đất tầng nông và trung bình.", "sub_latitude": 21.868333, "sub_longitude": 106.645, "sub_dms_text": "21°52'06\"B, 106°38'42\"Đ", "weather_note": "", "action_required": "Đo thế nằm đá gốc, bề dày vỏ phong hóa và xác nhận mặt trượt ngoài thực địa.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": 52.1, "priority_level": "Trung bình", "field_status": "HẠN CHẾ", "srtm_elevation_m": 351.0, "srtm_slope_deg": 16.6, "srtm_max_local_slope_deg": 28.1, "srtm_aspect_deg": 342.1, "interpreted_formation": "Hệ tầng Khôn Làng", "formation_symbol": "T2a kl", "nearest_fault_m": 2159.0, "nearest_road_m": 667.8, "nearest_waterway_m": 1378.2, "survey_day_rain_mm": 23.6, "antecedent_3d_rain_mm": 3.1, "historical_90d_rain_mm": 571.4}, "updated_at": "2026-11-11T10:26:32+07:00"}, {"waypoint_id": "WP-004", "site_id": "LS-KX-04", "name": "Điểm định vị Khuất Xá (LS-KX-04)", "commune": "Khuất Xá", "location_detail": "Xóm Còn Chè, thôn Tam Gia", "latitude": 21.7475, "longitude": 107.018333, "dms_text": "21°44'51\"B, 107°01'06\"Đ", "elevation_m": 281.0, "gps_accuracy_m": null, "planned_latitude": 21.7475, "planned_longitude": 107.018333, "coordinate_drift_m": 0.0, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Trầm tích lục nguyên Hệ tầng Rinh Chùa (T2l rc) tiếp giáp Hệ tầng Na Dương / Mẫu Sơn; đá phiến sét, bột kết phong hóa mạnh tạo mặt trượt cung tròn.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Sạt lở đất; 11 hộ cũ và 14 hộ phát sinh", "field_notes": "Điểm định vị khảo sát sạt lở tại Xóm Còn Chè, thôn Tam Gia (Khuất Xá). Quy mô: 4 điểm, 25 hộ dân. Ký hiệu bản đồ: Vali xanh lam.", "engineering_proposal": "Bố trí tái định cư, khoan khảo sát địa chất và đo vẽ ranh giới cung trượt.", "observer": "Đoàn khảo sát bước 1 (8 chuyên gia)", "observed_at": "2026-11-12T15:00:00+07:00", "photo_ids": "", "qa_status": "pending", "plausibility_ok": true, "quarantine_reasons": [], "log_entries": [{"entry_id": "WP-004-NOTE-01", "waypoint_id": "WP-004", "site_id": "LS-KX-04", "recorded_at": "2026-11-12T15:00:00+07:00", "author": "Tác tử Dữ liệu & Đoàn khảo sát bước 1", "category": "Định vị mốc & Hiện trạng", "title": "Ghi nhận mốc tọa độ quy hoạch và hiện trạng Khuất Xá", "content": "Điểm định vị khảo sát sạt lở tại Xóm Còn Chè, thôn Tam Gia (Khuất Xá). Quy mô: 4 điểm, 25 hộ dân. Ký hiệu bản đồ: Vali xanh lam.", "sub_latitude": 21.7475, "sub_longitude": 107.018333, "sub_dms_text": "21°44'51\"B, 107°01'06\"Đ", "weather_note": "", "action_required": "Bố trí tái định cư, khoan khảo sát địa chất và đo vẽ ranh giới cung trượt.", "plausibility_ok": true, "quarantine_reason": ""}, {"entry_id": "WP-004-NOTE-02", "waypoint_id": "WP-004", "site_id": "LS-KX-04", "recorded_at": "2026-11-12T15:00:00+07:00", "author": "Tác tử Địa chất (geology-raster)", "category": "Địa chất & Địa tầng", "title": "Đối chiếu cấu trúc địa chất 1:200.000 tại Khuất Xá", "content": "Trầm tích lục nguyên Hệ tầng Rinh Chùa (T2l rc) tiếp giáp Hệ tầng Na Dương / Mẫu Sơn; đá phiến sét, bột kết phong hóa mạnh tạo mặt trượt cung tròn.", "sub_latitude": 21.7475, "sub_longitude": 107.018333, "sub_dms_text": "21°44'51\"B, 107°01'06\"Đ", "weather_note": "", "action_required": "Đo thế nằm đá gốc, bề dày vỏ phong hóa và xác nhận mặt trượt ngoài thực địa.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": 52.6, "priority_level": "Trung bình", "field_status": "HẠN CHẾ", "srtm_elevation_m": 281.0, "srtm_slope_deg": 1.4, "srtm_max_local_slope_deg": 2.9, "srtm_aspect_deg": 180.0, "interpreted_formation": "Hệ tầng Rinh Chùa", "formation_symbol": "T2l rc", "nearest_fault_m": 1057.4, "nearest_road_m": 156.6, "nearest_waterway_m": 114.7, "survey_day_rain_mm": 11.8, "antecedent_3d_rain_mm": 1.4, "historical_90d_rain_mm": 652.8}, "updated_at": "2026-11-11T10:26:32+07:00"}, {"waypoint_id": "WP-005", "site_id": "LS-CL-05", "name": "Điểm định vị Chi Lăng (LS-CL-05)", "commune": "Chi Lăng", "location_detail": "Thôn Hợp Tiến và thôn Hòa Bình 2", "latitude": 21.601389, "longitude": 106.534722, "dms_text": "21°36'05\"B, 106°32'05\"Đ", "elevation_m": 54.0, "gps_accuracy_m": null, "planned_latitude": 21.601389, "planned_longitude": 106.534722, "coordinate_drift_m": 0.0, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Đới tiếp xúc kiến tạo giữa vách núi đá vôi Hệ tầng Bắc Sơn (C-P bs) và các trầm tích lục nguyên – carbonat Hệ tầng Lạng Sơn (T1 ls) / Khôn Làng (T2a kl); nguy cơ cao lở đá, đá lăn từ vách karst dốc đứng.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Tiềm ẩn sạt lở khối đá", "field_notes": "Điểm định vị khảo sát sạt lở tại Thôn Hợp Tiến và thôn Hòa Bình 2 (Chi Lăng). Quy mô: 2 điểm, 23 hộ dân. Ký hiệu bản đồ: Cờ xanh lá.", "engineering_proposal": "Phá dỡ khối đá nguy cơ sạt lở và bố trí khu dân cư tập trung cho các trường hợp khẩn cấp.", "observer": "Đoàn khảo sát bước 1 (8 chuyên gia)", "observed_at": "2026-11-13T10:00:00+07:00", "photo_ids": "", "qa_status": "pending", "plausibility_ok": true, "quarantine_reasons": [], "log_entries": [{"entry_id": "WP-005-NOTE-01", "waypoint_id": "WP-005", "site_id": "LS-CL-05", "recorded_at": "2026-11-13T10:00:00+07:00", "author": "Tác tử Dữ liệu & Đoàn khảo sát bước 1", "category": "Định vị mốc & Hiện trạng", "title": "Ghi nhận mốc tọa độ quy hoạch và hiện trạng Chi Lăng", "content": "Điểm định vị khảo sát sạt lở tại Thôn Hợp Tiến và thôn Hòa Bình 2 (Chi Lăng). Quy mô: 2 điểm, 23 hộ dân. Ký hiệu bản đồ: Cờ xanh lá.", "sub_latitude": 21.601389, "sub_longitude": 106.534722, "sub_dms_text": "21°36'05\"B, 106°32'05\"Đ", "weather_note": "", "action_required": "Phá dỡ khối đá nguy cơ sạt lở và bố trí khu dân cư tập trung cho các trường hợp khẩn cấp.", "plausibility_ok": true, "quarantine_reason": ""}, {"entry_id": "WP-005-NOTE-02", "waypoint_id": "WP-005", "site_id": "LS-CL-05", "recorded_at": "2026-11-13T10:00:00+07:00", "author": "Tác tử Địa chất (geology-raster)", "category": "Địa chất & Địa tầng", "title": "Đối chiếu cấu trúc địa chất 1:200.000 tại Chi Lăng", "content": "Đới tiếp xúc kiến tạo giữa vách núi đá vôi Hệ tầng Bắc Sơn (C-P bs) và các trầm tích lục nguyên – carbonat Hệ tầng Lạng Sơn (T1 ls) / Khôn Làng (T2a kl); nguy cơ cao lở đá, đá lăn từ vách karst dốc đứng.", "sub_latitude": 21.601389, "sub_longitude": 106.534722, "sub_dms_text": "21°36'05\"B, 106°32'05\"Đ", "weather_note": "", "action_required": "Đo thế nằm đá gốc, bề dày vỏ phong hóa và xác nhận mặt trượt ngoài thực địa.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": 53.8, "priority_level": "Trung bình", "field_status": "THEO DÕI", "srtm_elevation_m": 54.0, "srtm_slope_deg": 1.5, "srtm_max_local_slope_deg": 2.9, "srtm_aspect_deg": 288.4, "interpreted_formation": "Hệ tầng Lạng Sơn", "formation_symbol": "T1 ls", "nearest_fault_m": 2591.8, "nearest_road_m": 5.5, "nearest_waterway_m": 822.9, "survey_day_rain_mm": 8.8, "antecedent_3d_rain_mm": 26.0, "historical_90d_rain_mm": 718.0}, "updated_at": "2026-11-11T10:26:32+07:00"}, {"waypoint_id": "WP-006", "site_id": "LS-DH-06", "name": "Điểm bổ sung Điềm He (LS-DH-06)", "commune": "Điềm He", "location_detail": "Xóm Phai Duống, thôn Phù Huê", "latitude": null, "longitude": null, "dms_text": "", "elevation_m": null, "gps_accuracy_m": null, "planned_latitude": null, "planned_longitude": null, "coordinate_drift_m": null, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Cần đối chiếu tờ Bản đồ Địa chất 1:200.000 sau khi đo tọa độ GPS thực địa.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Sụt đất gây nứt nhà, nền, sân…", "field_notes": "UBND tỉnh đã công bố tình huống khẩn cấp về thiên tai. Quy mô: 1 điểm, 4 hộ dân. Chưa có tọa độ trong Công văn 6666 — đưa vào Vùng cách ly chờ đo định vị GPS thực địa.", "engineering_proposal": "Đề xuất phương án sắp xếp ổn định dân cư ra khỏi vùng thiên tai.", "observer": "Chờ đo GPS thực địa", "observed_at": "", "photo_ids": "", "qa_status": "quarantined", "plausibility_ok": false, "quarantine_reasons": ["Thiếu tọa độ vĩ độ (latitude) hoặc kinh độ (longitude)."], "log_entries": [{"entry_id": "WP-006-NOTE-01", "waypoint_id": "WP-006", "site_id": "LS-DH-06", "recorded_at": "2026-11-11T10:26:32+07:00", "author": "Tác tử Kiểm định Vật lý (physical-quarantine)", "category": "Cảnh báo khuyết tọa độ", "title": "Cách ly điểm Điềm He chờ bổ sung tọa độ WGS 84", "content": "UBND tỉnh đã công bố tình huống khẩn cấp về thiên tai. Quy mô: 1 điểm, 4 hộ dân. Chưa có tọa độ trong Công văn 6666 — đưa vào Vùng cách ly chờ đo định vị GPS thực địa.", "sub_latitude": null, "sub_longitude": null, "sub_dms_text": "", "weather_note": "", "action_required": "Đề xuất phương án sắp xếp ổn định dân cư ra khỏi vùng thiên tai.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": null, "priority_level": null, "field_status": null, "srtm_elevation_m": null, "srtm_slope_deg": null, "srtm_max_local_slope_deg": null, "srtm_aspect_deg": null, "interpreted_formation": null, "formation_symbol": null, "nearest_fault_m": null, "nearest_road_m": null, "nearest_waterway_m": null, "survey_day_rain_mm": null, "antecedent_3d_rain_mm": null, "historical_90d_rain_mm": null}, "updated_at": "2026-11-11T10:26:32+07:00"}, {"waypoint_id": "WP-007", "site_id": "LS-TB-07", "name": "Điểm bổ sung Thái Bình (LS-TB-07)", "commune": "Thái Bình", "location_detail": "Thôn Hưng Thái, Bản Chu", "latitude": null, "longitude": null, "dms_text": "", "elevation_m": null, "gps_accuracy_m": null, "planned_latitude": null, "planned_longitude": null, "coordinate_drift_m": null, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Cần đối chiếu tờ Bản đồ Địa chất 1:200.000 sau khi đo tọa độ GPS thực địa.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Nguy cơ sạt, trượt; tại thôn Hưng Thái (3 hộ) đã triển khai xây kè", "field_notes": "Đã triển khai xây kè tại thôn Hưng Thái (3 hộ). Quy mô: 2 điểm, 8 hộ dân. Chưa có tọa độ trong Công văn 6666 — đưa vào Vùng cách ly chờ đo định vị GPS thực địa.", "engineering_proposal": "Kiểm tra, đánh giá hiện trạng sụt, trượt đất.", "observer": "Chờ đo GPS thực địa", "observed_at": "", "photo_ids": "", "qa_status": "quarantined", "plausibility_ok": false, "quarantine_reasons": ["Thiếu tọa độ vĩ độ (latitude) hoặc kinh độ (longitude)."], "log_entries": [{"entry_id": "WP-007-NOTE-01", "waypoint_id": "WP-007", "site_id": "LS-TB-07", "recorded_at": "2026-11-11T10:26:32+07:00", "author": "Tác tử Kiểm định Vật lý (physical-quarantine)", "category": "Cảnh báo khuyết tọa độ", "title": "Cách ly điểm Thái Bình chờ bổ sung tọa độ WGS 84", "content": "Đã triển khai xây kè tại thôn Hưng Thái (3 hộ). Quy mô: 2 điểm, 8 hộ dân. Chưa có tọa độ trong Công văn 6666 — đưa vào Vùng cách ly chờ đo định vị GPS thực địa.", "sub_latitude": null, "sub_longitude": null, "sub_dms_text": "", "weather_note": "", "action_required": "Kiểm tra, đánh giá hiện trạng sụt, trượt đất.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": null, "priority_level": null, "field_status": null, "srtm_elevation_m": null, "srtm_slope_deg": null, "srtm_max_local_slope_deg": null, "srtm_aspect_deg": null, "interpreted_formation": null, "formation_symbol": null, "nearest_fault_m": null, "nearest_road_m": null, "nearest_waterway_m": null, "survey_day_rain_mm": null, "antecedent_3d_rain_mm": null, "historical_90d_rain_mm": null}, "updated_at": "2026-11-11T10:26:32+07:00"}, {"waypoint_id": "WP-008", "site_id": "LS-NH-08", "name": "Điểm bổ sung Nhất Hòa (LS-NH-08)", "commune": "Nhất Hòa", "location_detail": "Các thôn trên địa bàn", "latitude": null, "longitude": null, "dms_text": "", "elevation_m": null, "gps_accuracy_m": null, "planned_latitude": null, "planned_longitude": null, "coordinate_drift_m": null, "slope_height_m": null, "slope_angle_deg": null, "slope_aspect_deg": null, "geology_formation": "Cần đối chiếu tờ Bản đồ Địa chất 1:200.000 sau khi đo tọa độ GPS thực địa.", "soil_rock_material": "", "weathering_grade": "", "crack_present": "", "crack_width_mm": null, "crack_length_m": null, "seepage_condition": "", "drainage_condition": "", "hazard_description": "Nguy cơ xảy ra sạt lở đất, vết nứt (17 điểm giao thông)", "field_notes": "Bao gồm 17 điểm giao thông và khu vực hộ dân có vết nứt. Quy mô: 26 điểm, 12 hộ dân. Chưa có tọa độ trong Công văn 6666 — đưa vào Vùng cách ly chờ đo định vị GPS thực địa.", "engineering_proposal": "Đề nghị hướng dẫn, hỗ trợ đánh giá mức độ nguy hiểm tại khu vực hộ dân có nguy cơ thiên tai và phương án xử lý phù hợp.", "observer": "Chờ đo GPS thực địa", "observed_at": "", "photo_ids": "", "qa_status": "quarantined", "plausibility_ok": false, "quarantine_reasons": ["Thiếu tọa độ vĩ độ (latitude) hoặc kinh độ (longitude)."], "log_entries": [{"entry_id": "WP-008-NOTE-01", "waypoint_id": "WP-008", "site_id": "LS-NH-08", "recorded_at": "2026-11-11T10:26:32+07:00", "author": "Tác tử Kiểm định Vật lý (physical-quarantine)", "category": "Cảnh báo khuyết tọa độ", "title": "Cách ly điểm Nhất Hòa chờ bổ sung tọa độ WGS 84", "content": "Bao gồm 17 điểm giao thông và khu vực hộ dân có vết nứt. Quy mô: 26 điểm, 12 hộ dân. Chưa có tọa độ trong Công văn 6666 — đưa vào Vùng cách ly chờ đo định vị GPS thực địa.", "sub_latitude": null, "sub_longitude": null, "sub_dms_text": "", "weather_note": "", "action_required": "Đề nghị hướng dẫn, hỗ trợ đánh giá mức độ nguy hiểm tại khu vực hộ dân có nguy cơ thiên tai và phương án xử lý phù hợp.", "plausibility_ok": true, "quarantine_reason": ""}], "agent_context": {"operational_priority_score": null, "priority_level": null, "field_status": null, "srtm_elevation_m": null, "srtm_slope_deg": null, "srtm_max_local_slope_deg": null, "srtm_aspect_deg": null, "interpreted_formation": null, "formation_symbol": null, "nearest_fault_m": null, "nearest_road_m": null, "nearest_waterway_m": null, "survey_day_rain_mm": null, "antecedent_3d_rain_mm": null, "historical_90d_rain_mm": null}, "updated_at": "2026-11-11T10:26:32+07:00"}];
+var logbookWaypoints = [];
+
+function toDmsDashboard(val, isLat) {
+  var hemi = isLat ? (val >= 0 ? 'B' : 'N') : (val >= 0 ? 'Đ' : 'T');
+  var a = Math.abs(Number(val));
+  var d = Math.floor(a);
+  var mf = (a - d) * 60;
+  var m = Math.floor(mf);
+  var s = Math.round((mf - m) * 60);
+  if (s >= 60) { s = 0; m += 1; }
+  if (m >= 60) { m = 0; d += 1; }
+  return d + '°' + String(m).padStart(2, '0') + "'" + String(s).padStart(2, '0') + '"' + hemi;
+}
+
+function escHtmlDash(s) {
+  var d = document.createElement('div');
+  d.textContent = s === null || s === undefined ? '' : String(s);
+  return d.innerHTML;
+}
+
+function initLogbookDashboard() {
+  var saved = localStorage.getItem(LOGBOOK_STORAGE_KEY);
+  if (saved) {
+    try {
+      var parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        logbookWaypoints = parsed.map(function(w, idx) {
+          if (!Array.isArray(w.log_entries) || w.log_entries.length === 0) {
+            var emb = EMBEDDED_WAYPOINTS[idx];
+            w.log_entries = (emb && Array.isArray(emb.log_entries)) ? emb.log_entries : [{
+              entry_id: w.waypoint_id + '-NOTE-01',
+              waypoint_id: w.waypoint_id,
+              site_id: w.site_id,
+              recorded_at: w.observed_at || new Date().toISOString().slice(0, 19) + '+07:00',
+              author: w.observer || 'Đoàn khảo sát bước 1',
+              category: 'Khảo sát ban đầu',
+              title: 'Ghi nhận mốc tọa độ ' + (w.commune || ''),
+              content: w.field_notes || '',
+              sub_latitude: w.latitude,
+              sub_longitude: w.longitude,
+              sub_dms_text: w.dms_text || '',
+              action_required: w.engineering_proposal || ''
+            }];
+          }
+          return w;
+        });
+      }
+    } catch (e) {}
+  }
+  if (!logbookWaypoints || logbookWaypoints.length === 0) {
+    logbookWaypoints = EMBEDDED_WAYPOINTS;
+  }
+  renderLogbookSection();
+}
+
+function renderLogbookSection() {
+  var coordTbody = document.getElementById('master-coord-tbody');
+  var logTbody = document.getElementById('chronological-log-tbody');
+  var selectEl = document.getElementById('dlg-site-id');
+  if (!coordTbody || !logTbody) return;
+
+  coordTbody.innerHTML = '';
+  logTbody.innerHTML = '';
+  if (selectEl) selectEl.innerHTML = '';
+
+  logbookWaypoints.forEach(function(w) {
+    var entries = Array.isArray(w.log_entries) ? w.log_entries : [];
+    var countBadge = document.getElementById('card-note-count-' + w.site_id);
+    if (countBadge) {
+      countBadge.textContent = 'Nhật ký tọa độ: ' + entries.length + ' mục ghi chú';
+    }
+    if (selectEl) {
+      var opt = document.createElement('option');
+      opt.value = w.site_id;
+      opt.textContent = w.waypoint_id + ' (' + w.site_id + ') — ' + w.commune;
+      selectEl.appendChild(opt);
+    }
+
+    var latStr = (w.latitude !== null && w.latitude !== undefined && w.latitude !== '') ? Number(w.latitude).toFixed(6) : '—';
+    var lonStr = (w.longitude !== null && w.longitude !== undefined && w.longitude !== '') ? Number(w.longitude).toFixed(6) : '—';
+    var elevStr = (w.elevation_m !== null && w.elevation_m !== undefined && w.elevation_m !== '') ? Number(w.elevation_m).toFixed(1) : '—';
+    var qaColor = (w.qa_status === 'quarantined' || !w.plausibility_ok) ? '#b91c1c' : (w.qa_status === 'verified' ? '#15803d' : '#b45309');
+
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><code>' + escHtmlDash(w.waypoint_id) + '</code></td>' +
+      '<td><code>' + escHtmlDash(w.site_id) + '</code></td>' +
+      '<td><b>' + escHtmlDash(w.commune) + '</b><br><small>' + escHtmlDash(w.location_detail) + '</small></td>' +
+      '<td style="font-family:monospace">' + escHtmlDash(latStr) + '</td>' +
+      '<td style="font-family:monospace">' + escHtmlDash(lonStr) + '</td>' +
+      '<td>' + escHtmlDash(w.dms_text || 'Chưa có tọa độ') + '</td>' +
+      '<td>' + escHtmlDash(elevStr) + '</td>' +
+      '<td><b>' + entries.length + '</b></td>' +
+      '<td><span class="status" style="background:' + qaColor + '">' + escHtmlDash(w.qa_status || 'pending') + '</span></td>' +
+      '<td><button type="button" class="btn-toggle" onclick="openNoteDialogForSite('' + escHtmlDash(w.site_id) + '')">➕ Ghi chú</button></td>';
+    coordTbody.appendChild(tr);
+
+    entries.forEach(function(en) {
+      var enLat = (en.sub_latitude !== null && en.sub_latitude !== undefined) ? en.sub_latitude : w.latitude;
+      var enLon = (en.sub_longitude !== null && en.sub_longitude !== undefined) ? en.sub_longitude : w.longitude;
+      var enCoord = (enLat !== null && enLat !== undefined && enLon !== null && enLon !== undefined)
+        ? Number(enLat).toFixed(6) + '°B, ' + Number(enLon).toFixed(6) + '°Đ<br><small>' + escHtmlDash(en.sub_dms_text || w.dms_text || '') + '</small>'
+        : '<span style="color:#b91c1c">Chưa có tọa độ (Cách ly)</span>';
+      var ltr = document.createElement('tr');
+      ltr.innerHTML =
+        '<td><code>' + escHtmlDash(en.entry_id) + '</code></td>' +
+        '<td><b>' + escHtmlDash(w.commune) + '</b> (<code>' + escHtmlDash(w.waypoint_id) + '</code>)</td>' +
+        '<td style="font-family:monospace">' + enCoord + '</td>' +
+        '<td>' + escHtmlDash(en.recorded_at) + '<br><small><b>' + escHtmlDash(en.author) + '</b></small></td>' +
+        '<td>' + escHtmlDash(en.category) + '</td>' +
+        '<td><b>' + escHtmlDash(en.title) + '</b><br>' + escHtmlDash(en.content) + '</td>' +
+        '<td>' + escHtmlDash(en.action_required || '—') + '</td>';
+      logTbody.appendChild(ltr);
+    });
+  });
+}
+
+function openNoteDialogForSite(siteId) {
+  var dlg = document.getElementById('logbook-dialog');
+  var sel = document.getElementById('dlg-site-id');
+  if (sel) sel.value = siteId;
+  var wp = logbookWaypoints.find(function(x) { return x.site_id === siteId || x.waypoint_id === siteId; });
+  if (wp) {
+    document.getElementById('dlg-lat').value = wp.latitude !== null && wp.latitude !== undefined ? wp.latitude : '';
+    document.getElementById('dlg-lon').value = wp.longitude !== null && wp.longitude !== undefined ? wp.longitude : '';
+    document.getElementById('dlg-elev').value = wp.elevation_m !== null && wp.elevation_m !== undefined ? wp.elevation_m : '';
+    document.getElementById('dlg-title').value = '';
+    document.getElementById('dlg-content').value = '';
+    document.getElementById('dlg-action').value = '';
+  }
+  if (dlg && dlg.showModal) dlg.showModal();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initLogbookDashboard();
+  var dlg = document.getElementById('logbook-dialog');
+  if (dlg && !('closedBy' in HTMLDialogElement.prototype)) {
+    var outside = function(e, d) {
+      var r = d.getBoundingClientRect();
+      return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+    };
+    var pressedOutside = false;
+    dlg.addEventListener('pointerdown', function(e) { pressedOutside = outside(e, dlg); });
+    dlg.addEventListener('pointerup', function(e) { if (pressedOutside && outside(e, dlg)) dlg.close(); });
+  }
+
+  var form = document.getElementById('logbook-modal-form');
+  if (form) {
+    form.addEventListener('submit', function(ev) {
+      ev.preventDefault();
+      var sid = document.getElementById('dlg-site-id').value;
+      var wp = logbookWaypoints.find(function(x) { return x.site_id === sid || x.waypoint_id === sid; });
+      if (!wp) return;
+      var rawLat = document.getElementById('dlg-lat').value.trim();
+      var rawLon = document.getElementById('dlg-lon').value.trim();
+      var rawElev = document.getElementById('dlg-elev').value.trim();
+      var latVal = rawLat !== '' ? Number(rawLat.replace(',', '.')) : wp.latitude;
+      var lonVal = rawLon !== '' ? Number(rawLon.replace(',', '.')) : wp.longitude;
+      if (rawElev !== '' && !isNaN(Number(rawElev.replace(',', '.')))) {
+        wp.elevation_m = Number(rawElev.replace(',', '.'));
+      }
+      if (latVal !== null && lonVal !== null && !isNaN(latVal) && !isNaN(lonVal)) {
+        wp.latitude = latVal;
+        wp.longitude = lonVal;
+        wp.dms_text = toDmsDashboard(latVal, true) + ', ' + toDmsDashboard(lonVal, false);
+        if (latVal >= 21.0 && latVal <= 23.0 && lonVal >= 105.5 && lonVal <= 108.5) {
+          wp.plausibility_ok = true;
+          if (wp.qa_status === 'quarantined') wp.qa_status = 'pending';
+        }
+      }
+      if (!Array.isArray(wp.log_entries)) wp.log_entries = [];
+      var nextIdx = wp.log_entries.length + 1;
+      var newEntry = {
+        entry_id: wp.waypoint_id + '-NOTE-' + String(nextIdx).padStart(2, '0'),
+        waypoint_id: wp.waypoint_id,
+        site_id: wp.site_id,
+        recorded_at: new Date().toISOString().slice(0, 19) + '+07:00',
+        author: document.getElementById('dlg-author').value.trim() || 'Đoàn khảo sát bước 1',
+        category: document.getElementById('dlg-category').value,
+        title: document.getElementById('dlg-title').value.trim(),
+        content: document.getElementById('dlg-content').value.trim(),
+        sub_latitude: wp.latitude,
+        sub_longitude: wp.longitude,
+        sub_dms_text: wp.dms_text || '',
+        action_required: document.getElementById('dlg-action').value.trim()
+      };
+      wp.log_entries.push(newEntry);
+      localStorage.setItem(LOGBOOK_STORAGE_KEY, JSON.stringify(logbookWaypoints));
+      fetch('http://127.0.0.1:8765/api/waypoints/add_note', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ target_id: wp.waypoint_id }, newEntry))
+      }).catch(function() {});
+      renderLogbookSection();
+      dlg.close('saved');
+    });
+  }
+});
+
+var DASH_CRC_TABLE = (function() {
+  var t = new Uint32Array(256);
+  for (var i = 0; i < 256; i++) {
+    var c = i;
+    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+
+function dashCrc32(b) {
+  var c = 0xFFFFFFFF;
+  for (var i = 0; i < b.length; i++) c = DASH_CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function dashZipStore(files) {
+  var enc = new TextEncoder();
+  var locals = [], centrals = [], off = 0;
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    var nb = enc.encode(f.name), db = enc.encode(f.content), crc = dashCrc32(db);
+    var lh = new Uint8Array(30 + nb.length), lv = new DataView(lh.buffer);
+    lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0x0800, true);
+    lv.setUint32(14, crc, true); lv.setUint32(18, db.length, true); lv.setUint32(22, db.length, true);
+    lv.setUint16(26, nb.length, true); lh.set(nb, 30);
+    var ch = new Uint8Array(46 + nb.length), cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0x0800, true); cv.setUint32(16, crc, true); cv.setUint32(20, db.length, true);
+    cv.setUint32(24, db.length, true); cv.setUint16(28, nb.length, true); cv.setUint32(42, off, true);
+    ch.set(nb, 46);
+    locals.push(lh, db); centrals.push(ch); off += lh.length + db.length;
+  }
+  var cSize = centrals.reduce(function(a, b) { return a + b.length; }, 0);
+  var eocd = new Uint8Array(22), ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, files.length, true);
+  ev.setUint16(10, files.length, true); ev.setUint32(12, cSize, true); ev.setUint32(16, off, true);
+  return new Blob(locals.concat(centrals, [eocd]), { type: 'application/octet-stream' });
+}
+
+function dashEscXml(s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function dashBuildSheet(rows) {
+  var body = rows.map(function(r, ri) {
+    var cells = r.map(function(v, ci) {
+      var ref = String.fromCharCode(65 + ci) + (ri + 1);
+      if (v === null || v === undefined || v === '') return '<c r="' + ref + '"/>';
+      if (typeof v === 'number' && isFinite(v)) return '<c r="' + ref + '" t="n"><v>' + v + '</v></c>';
+      return '<c r="' + ref + '" t="inlineStr"><is><t>' + dashEscXml(v) + '</t></is></c>';
+    }).join('');
+    return '<row r="' + (ri + 1) + '">' + cells + '</row>';
+  }).join('');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>' + body + '</sheetData></worksheet>';
+}
+
+function exportLogbookXlsx() {
+  var s1 = [['Mã Định vị', 'Mã Điểm KS', 'Xã', 'Vị trí Chi tiết', 'Vĩ độ WGS84 (°B)', 'Kinh độ WGS84 (°Đ)', 'Tọa độ DMS', 'Cao độ (m)', 'Số Mục Nhật ký', 'Ghi chú Tổng hợp', 'Kiến nghị', 'Trạng thái QA']];
+  var s2 = [['Mã Mục Nhật ký', 'Mã Định vị', 'Mã Điểm KS', 'Xã / Vị trí', 'Vĩ độ (°B)', 'Kinh độ (°Đ)', 'Tọa độ DMS', 'Thời gian Ghi', 'Người Ghi', 'Hạng mục', 'Tiêu đề Ghi chú', 'Nội dung Chi tiết', 'Kiến nghị']];
+  logbookWaypoints.forEach(function(w) {
+    var entries = Array.isArray(w.log_entries) ? w.log_entries : [];
+    s1.push([w.waypoint_id, w.site_id, w.commune, w.location_detail, w.latitude, w.longitude, w.dms_text, w.elevation_m, entries.length, w.field_notes, w.engineering_proposal, w.qa_status]);
+    entries.forEach(function(en) {
+      s2.push([en.entry_id, w.waypoint_id, w.site_id, w.commune + ' - ' + w.location_detail, en.sub_latitude ?? w.latitude, en.sub_longitude ?? w.longitude, en.sub_dms_text || w.dms_text, en.recorded_at, en.author, en.category, en.title, en.content, en.action_required]);
+    });
+  });
+  var blob = dashZipStore([
+    { name: '[Content_Types].xml', content: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>' },
+    { name: '_rels/.rels', content: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: 'xl/workbook.xml', content: '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="BangToaDo_DiemDinhVi" sheetId="1" r:id="rId1"/><sheet name="NhatKyKhaoSat_ChiTiet" sheetId="2" r:id="rId2"/></sheets></workbook>' },
+    { name: 'xl/_rels/workbook.xml.rels', content: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/></Relationships>' },
+    { name: 'xl/worksheets/sheet1.xml', content: dashBuildSheet(s1) },
+    { name: 'xl/worksheets/sheet2.xml', content: dashBuildSheet(s2) }
+  ]);
+  var u = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = u; a.download = 'NhatKyKhaoSat_BangToaDo_LangSon.xlsx'; document.body.appendChild(a); a.click(); a.remove();
+}
+
+function exportLogbookDocx() {
+  var pXml = function(t, b) { return '<w:p><w:r>' + (b ? '<w:rPr><w:b/></w:rPr>' : '') + '<w:t xml:space="preserve">' + dashEscXml(t) + '</w:t></w:r></w:p>'; };
+  var parts = [
+    pXml('SỔ NHẬT KÝ KHẢO SÁT ĐỊA KỸ THUẬT HIỆN TRƯỜNG & BẢNG TỌA ĐỘ LƯU (WGS 84)', true),
+    pXml('I. BẢNG TỌA ĐỘ LƯU CÁC ĐIỂM ĐỊNH VỊ KHẢO SÁT', true)
+  ];
+  logbookWaypoints.forEach(function(w, idx) {
+    var coord = (w.latitude !== null && w.latitude !== undefined) ? w.latitude + '°B, ' + w.longitude + '°Đ (' + (w.dms_text || '') + ')' : 'Chưa có tọa độ (Vùng cách ly)';
+    parts.push(pXml((idx + 1) + '. [' + w.waypoint_id + ' | ' + w.site_id + '] Xã ' + w.commune + ' — ' + w.location_detail + ' | Tọa độ: ' + coord, true));
+    var entries = Array.isArray(w.log_entries) ? w.log_entries : [];
+    entries.forEach(function(en) {
+      parts.push(pXml('   • [' + en.entry_id + ' | ' + en.recorded_at + ' | ' + en.category + '] ' + en.title + ': ' + en.content + ' (Người ghi: ' + en.author + ')'));
+      if (en.action_required) parts.push(pXml('     -> Kiến nghị: ' + en.action_required));
+    });
+  });
+  var blob = dashZipStore([
+    { name: '[Content_Types].xml', content: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>' },
+    { name: '_rels/.rels', content: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>' },
+    { name: 'word/document.xml', content: '<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + parts.join('') + '</w:body></w:document>' }
+  ]);
+  var u = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = u; a.download = 'NhatKyKhaoSat_BangToaDo_LangSon.docx'; document.body.appendChild(a); a.click(); a.remove();
+}
+</script>
+</body></html>
